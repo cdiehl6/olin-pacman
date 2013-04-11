@@ -34,7 +34,7 @@ class Ghost(object):
         
         return '\n'.join(res)
     def new_next_pos(self):
-        possmoves = [[0,2],[1,1],[0,0],[-1,1]] 
+        possmoves = [[0,2],[-1,1],[0,0],[1,1]] 
         possmoves.remove(self.position)
         possdist = []
         for move in possmoves:
@@ -42,9 +42,21 @@ class Ghost(object):
         leastdistindex = 0
         for d in range(len(possdist)):
             if possdist[d] < possdist[leastdistindex]:
-                leastdist = d        
+                leastdistindex = d 
+        return possmoves[leastdistindex] 
+    def make_move(self):
+        temp_next_move = self.new_next_pos
+        self.position = self.nextpos
+        self.nextpos = temp_next_move
+class Blinky(Ghost):
+    def define_target(self,pacman):
+        self.target = pacman.position
+class Pinky(Ghost):
+    def define_target(self,pacman):
+        
 
 Robert = Ghost('Robert')
 print(Robert)
-Robert.new_next_pos()
+print(Robert.new_next_pos())
+
         
