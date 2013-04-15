@@ -52,7 +52,36 @@ class Blinky(Ghost):
     def define_target(self,pacman):
         self.target = pacman.position
 class Pinky(Ghost):
+#Right now, just adding tiles, not pixels BTW
     def define_target(self,pacman):
+        if pacman.vhat == directions['left']:
+            self.target = [pacman.position[0] - 4, pacman.position[1]]
+        elif pacman.vhat == directions['right']:
+            self.target = [pacman.position[0] + 4, pacman.position[0]]
+        elif pacman.vhat == directions['down']:
+            self.target = [pacman.position[0], pacman.position[1] - 4]
+        elif pacman.vhat == directions['up']:
+            self.target = [pacman.position[0]-4, pacman.position[1] + 4] 
+class Inky(Ghost):
+    def define_target(self,pacman,blinky):
+        offsettile = [0,0]
+        if pacman.vhat == directions['left']:
+            offsettile = [pacman.position[0] - 2, pacman.position[1]]
+        elif pacman.vhat == directions['right']:
+            offsettile = [pacman.position[0] + 2, pacman.position[0]]
+        elif pacman.vhat == directions['down']:
+            offsettile = [pacman.position[0], pacman.position[1] - 2]
+        elif pacman.vhat == directions['up']:
+            offsettile = [pacman.position[0]-2, pacman.position[1] + 2]
+        self.target = [2*offsettile[0] - blinky.position[0], 2*offsettile[1] - blinky.position[1]]
+class Clyde(Ghost):
+    def define_target(self,pacman):
+        dist = sqrt((self.position[0]-pacman.position[0])**2 + (self.position[1]-pacman.position[1])**2)
+        if dist >= 8:
+            self.target = pacman.position
+        else:
+            self.target = [-1,-29]
+            #This should be the bottom left corner of the maze (I don't know what that is yet...]
         
 
 Robert = Ghost('Robert')
