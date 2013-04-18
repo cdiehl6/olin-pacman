@@ -105,7 +105,7 @@ class Clyde(Ghost):
         if dist >= 8:
             self.target = pacman.position
         else:
-            self.target = [-1,-29]
+            self.target = [-1,-1]
             #This should be the bottom left corner of the maze (I don't know what that is yet]
         
 
