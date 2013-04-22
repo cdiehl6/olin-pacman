@@ -43,53 +43,120 @@ def reverse_lookup(d, v):
             return k
     raise ValueError
 
-#Defines the generic playable character object
-class dude(pygame.sprite.Sprite):
-    #Dictionary to go from direction to direction unit vector
-    directions = {'up': [0,-1], 'left': [-1,0],'down': [0,1],'right':[1,0]}
-    
+directions = {'up': [0,-1], 'left': [-1,0],'down': [0,1],'right':[1,0]} #a dictionary that converts from direction to a [x,y] vector or tuple
+
+#Defines the generic playable character object. 
+class dude(pygame.sprite.Sprite):    
     def __init__(self):
-	#Initialize ghost parameters
+	#Initialize the dood's parameters
         pygame.sprite.Sprite.__init__(self) #call sprite initializer
-        self.image, self.rect = load_image('pacman.bmp',-1)
-        self.original = self.image
+        self.image, self.rect = load_image('pacman.bmp',-1) #sets its image to the called image
+        self.original = self.image #sets an unchanging image as its default orientation (facing left) (yes, that's important for how the function turns things later)
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
-        self.rect.topleft = 10, 10
+        self.rect.center = 200, 200 #sets the position, in pixels, of the center of the dood
 
-        self.vhat = [1,0]
-        self.speed = 5
+        self.vhat = [1,0] #sets initial direction
+        self.speed = 5 #sets speed in pixels (?) per cycle (?)
 
     def _turn(self,direct):
-        newv=self.directions[direct]
-        if self.vhat == newv:
+        #takes a string as an input of 'up' 'down' 'left' or 'right' and turns pacman and makes him go in the way you want him to go
+        newv=directions[direct] #looks up in the directions dictionary
+        if self.vhat == newv: #does nothing when you try to turn in the direction that you're already turning.
             return
-        self.vhat = newv
-        self.image = self.original
+        
+        self.vhat = newv #sets direction to the direction you are trying to go
+        self.image = self.original #resets the image to its original (left-facing) orientation
         center = self.rect.center
-        angles = {'up': 90, 'left': 180, 'down': 270, 'right': 0}
+        angles = {'up': 90, 'left': 180, 'down': 270, 'right': 0} #dictionary that defines rotation angles
+        
         rotate = pygame.transform.rotate
-        self.image = rotate(self.original, angles[direct])
-        self.rect = self.image.get_rect(center=center)
+        self.image = rotate(self.original, angles[direct]) #rotates the image from its original position
+        self.rect = self.image.get_rect(center=center) #resets the image's center to its original center.
         
     def _move(self):
-        movingx = self.vhat[0]*self.speed
-        movingy = self.vhat[1]*self.speed
-        if self.rect.left<self.area.left and self.vhat==self.directions['left']:
+        movingx = self.vhat[0]*self.speed #sets how far it will move in the x direction
+        movingy = self.vhat[1]*self.speed #sets how far it will move in the y direction
+
+        #the following if/elif block makes the dood stop if it hits the side of the window.
+        if self.rect.left<self.area.left and self.vhat==directions['left']: #left edge
             movingx = 0
-        elif self.rect.right>self.area.right and self.vhat == self.directions['right']:
+        elif self.rect.right>self.area.right and self.vhat == directions['right']: #right edge
             movingx = 0
-        elif self.rect.top < self.area.top and self.vhat==self.directions['up']:
+        elif self.rect.top < self.area.top and self.vhat==directions['up']: #top edge
             movingy = 0
-        elif self.rect.bottom > self.area.bottom and self.vhat == self.directions['down']:
+        elif self.rect.bottom > self.area.bottom and self.vhat == directions['down']: #bottom edge
             movingy = 0
+
+        #the next two lines move the dood
         newpos = self.rect.move((movingx,movingy))
         self.rect = newpos
             
-        
     def update(self):
         #move the dood
         self._move()
+
+class Ghost(pygame.sprite.Sprite):
+    #Dictionary to go from direction to direction unit vector
+    def __init__(self, name = 'Ghost', position = [0,0], nextpos = [0,1], target = [-1,-1], vhat = [0,1], chase= False, speed =10):
+	#Initialize ghost parameters
+        self.name = name
+        self.position = position
+        self.target = target
+        self.chase = chase
+        self.speed = speed
+        self.vhat = vhat
+        self.nextpos = nextpos
+
+    def __str__(self):
+	#Print out Ghosty stuff
+        namestr = self.name.upper()
+        posstr = 'position:  ' + str(self.position)
+        targetstr = 'target:    ' + str(self.target) 
+        speedstr = 'speed:     ' + str(self.speed)
+        directionstr = 'direction: ' + str(reverse_lookup(directions, self.vhat))
+        nextposstr = 'next pos:  ' + str(self.nextpos)
+        chasestr = 'chase?     ' + str(self.chase)
+        res = []
+        res.append(namestr)
+        res.append(posstr)
+        res.append(targetstr)
+        res.append(speedstr)
+        res.append(directionstr)
+        res.append(nextposstr)
+        res.append(chasestr)
+        
+        return '\n'.join(res)
+
+    def new_next_pos(self):
+	#Get all possible moves 2 moves in the futre in the order up, left, down, right
+        possmoves = [[0,2],[-1,1],[0,0],[1,1]] 
+	#Remve the current position (the ghost cannot reverse direction)
+        possmoves.remove(self.position)
+	#Find the distance from each possible move to the target tile
+        possdist = []
+        for move in possmoves:
+            possdist.append(sqrt((self.target[0] - move[0])**2 + (self.target[1] - move[1])**2))
+	#Find the move that is closest (if two are the same, the order is: up, left, down right)
+        leastdistindex = 0
+        for d in range(len(possdist)):
+            if possdist[d] < possdist[leastdistindex]:
+                leastdistindex = d 
+	#Return the new next position
+        return possmoves[leastdistindex] 
+	
+    def make_move(self):
+	#Get the new next move
+        temp_next_move = self.new_next_pos
+	#Make the current positon the old next position
+        self.position = self.nextpos
+	#make the next position, the new next move
+        self.nextpos = temp_next_move
+
+    def update(self):
+        self.position=self.position
+#Create the specific ghosts
+
 
 pygame.init()
 screen = pygame.display.set_mode((500,500))
