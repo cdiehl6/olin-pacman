@@ -46,7 +46,7 @@ def reverse_lookup(d, v):
 #Defines the generic playable character object
 class dude(pygame.sprite.Sprite):
     #Dictionary to go from direction to direction unit vector
-    directions = {'up': [0,1], 'left': [-1,0],'down': [0,-1],'right':[1,0]}
+    directions = {'up': [0,-1], 'left': [-1,0],'down': [0,1],'right':[1,0]}
     
     def __init__(self):
 	#Initialize ghost parameters
@@ -57,14 +57,13 @@ class dude(pygame.sprite.Sprite):
         self.area = screen.get_rect()
         self.rect.topleft = 10, 10
 
-        self.vhat = [0,-1]
-        self.speed = 10
+        self.vhat = [1,0]
+        self.speed = 5
 
-    def turn(self,direct):
+    def _turn(self,direct):
         newv=self.directions[direct]
         if self.vhat == newv:
             return
-        print(direct)
         self.vhat = newv
         self.image = self.original
         center = self.rect.center
@@ -73,10 +72,24 @@ class dude(pygame.sprite.Sprite):
         self.image = rotate(self.original, angles[direct])
         self.rect = self.image.get_rect(center=center)
         
+    def _move(self):
+        movingx = self.vhat[0]*self.speed
+        movingy = self.vhat[1]*self.speed
+        if self.rect.left<self.area.left and self.vhat==self.directions['left']:
+            movingx = 0
+        elif self.rect.right>self.area.right and self.vhat == self.directions['right']:
+            movingx = 0
+        elif self.rect.top < self.area.top and self.vhat==self.directions['up']:
+            movingy = 0
+        elif self.rect.bottom > self.area.bottom and self.vhat == self.directions['down']:
+            movingy = 0
+        newpos = self.rect.move((movingx,movingy))
+        self.rect = newpos
+            
+        
     def update(self):
         #move the dood
-        pos = pygame.mouse.get_pos()
-        self.rect.midtop = pos
+        self._move()
 
 pygame.init()
 screen = pygame.display.set_mode((500,500))
@@ -108,13 +121,13 @@ while 1:
             raise SystemExit
         elif event.type == KEYDOWN:
             if event.key == K_LEFT:
-                pacman.turn('left')
+                pacman._turn('left')
             elif event.key == K_RIGHT:
-                pacman.turn('right')
+                pacman._turn('right')
             elif event.key == K_UP:
-                pacman.turn('up')
+                pacman._turn('up')
             elif event.key == K_DOWN:
-                pacman.turn('down')
+                pacman._turn('down')
     allsprites.update()
     screen.blit(background, (0, 0))
     allsprites.draw(screen)
