@@ -35,7 +35,7 @@ def load_sound(name):
         raise(SystemExit, message)
     return sound
 
-from math import sqrt
+from math import sqrt, floor
 #get the key in the dictionary from the value
 def reverse_lookup(d, v):
     for k in d:
@@ -43,18 +43,28 @@ def reverse_lookup(d, v):
             return k
     raise ValueError
 
+def pos_to_box(position = (0,0), boxsize=18):
+    boxx = int(floor(position[0]/boxsize))
+    boxy = int(floor(position[1]/boxsize))
+    return (boxx, boxy)
+
+def box_to_pos(box = (0,0), boxsize=18):
+    posx = int(box[0]*boxsize - floor(boxsize/2))
+    posy = int(box[1]*boxsize - floor(boxsize/2))
+    return (posx, posy)
+
 directions = {'up': [0,-1], 'left': [-1,0],'down': [0,1],'right':[1,0]} #a dictionary that converts from direction to a [x,y] vector or tuple
 
 #Defines the generic playable character object. 
 class dude(pygame.sprite.Sprite):    
-    def __init__(self):
+    def __init__(self, position = (200,200), imageloc = 'pacman.bmp'):
 	#Initialize the dood's parameters
         pygame.sprite.Sprite.__init__(self) #call sprite initializer
-        self.image, self.rect = load_image('pacman.bmp',-1) #sets its image to the called image
+        self.image, self.rect = load_image(imageloc,-1) #sets its image to the called image
         self.original = self.image #sets an unchanging image as its default orientation (facing left) (yes, that's important for how the function turns things later)
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
-        self.rect.center = 200, 200 #sets the position, in pixels, of the center of the dood
+        self.rect.center = position #sets the position, in pixels, of the center of the dood
 
         self.vhat = [1,0] #sets initial direction
         self.speed = 5 #sets speed in pixels (?) per cycle (?)
@@ -96,37 +106,14 @@ class dude(pygame.sprite.Sprite):
         #move the dood
         self._move()
 
-class Ghost(pygame.sprite.Sprite):
+class ghost(dude):
     #Dictionary to go from direction to direction unit vector
-    def __init__(self, name = 'Ghost', position = [0,0], nextpos = [0,1], target = [-1,-1], vhat = [0,1], chase= False, speed =10):
+    def __init__(self, position = (20,20), imageloc = 'ghost.bmp', nextpos = [0,1], target = [-1,-1], vhat = [0,1], chase= False, speed =10):
 	#Initialize ghost parameters
-        self.name = name
-        self.position = position
+        dude.__init__(self, position, imageloc)
         self.target = target
         self.chase = chase
-        self.speed = speed
-        self.vhat = vhat
         self.nextpos = nextpos
-
-    def __str__(self):
-	#Print out Ghosty stuff
-        namestr = self.name.upper()
-        posstr = 'position:  ' + str(self.position)
-        targetstr = 'target:    ' + str(self.target) 
-        speedstr = 'speed:     ' + str(self.speed)
-        directionstr = 'direction: ' + str(reverse_lookup(directions, self.vhat))
-        nextposstr = 'next pos:  ' + str(self.nextpos)
-        chasestr = 'chase?     ' + str(self.chase)
-        res = []
-        res.append(namestr)
-        res.append(posstr)
-        res.append(targetstr)
-        res.append(speedstr)
-        res.append(directionstr)
-        res.append(nextposstr)
-        res.append(chasestr)
-        
-        return '\n'.join(res)
 
     def new_next_pos(self):
 	#Get all possible moves 2 moves in the futre in the order up, left, down, right
@@ -143,7 +130,7 @@ class Ghost(pygame.sprite.Sprite):
             if possdist[d] < possdist[leastdistindex]:
                 leastdistindex = d 
 	#Return the new next position
-        return possmoves[leastdistindex] 
+        return possmoves[leastdistindex]
 	
     def make_move(self):
 	#Get the new next move
@@ -152,10 +139,6 @@ class Ghost(pygame.sprite.Sprite):
         self.position = self.nextpos
 	#make the next position, the new next move
         self.nextpos = temp_next_move
-
-    def update(self):
-        self.position=self.position
-#Create the specific ghosts
 
 
 pygame.init()
@@ -177,8 +160,9 @@ screen.blit(background, (0,0))
 pygame.display.flip()
 
 pacman = dude()
+GHOST = ghost()
 
-allsprites = pygame.sprite.RenderPlain(pacman)
+allsprites = pygame.sprite.RenderPlain(pacman, GHOST)
 clock = pygame.time.Clock()
 
 while 1:
