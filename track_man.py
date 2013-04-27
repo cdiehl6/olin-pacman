@@ -196,9 +196,7 @@ screen = pygame.display.set_mode((25*18,29*18))
 pygame.display.set_caption('pacman')
 pygame.mouse.set_visible(0)
 
-background = pygame.Surface(screen.get_size())
-background = background.convert()
-background.fill((0,0,0))
+background = pygame.image.load("claire.bmp")
 
 if pygame.font:
     font = pygame.font.Font(None,36)
