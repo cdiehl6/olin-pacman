@@ -69,6 +69,8 @@ def mapgen(maptextfile = 'map.txt'):
         for c in range(len(read_data[r])):
             if read_data[r][c] == '#':
                 is_move_poss[r][c] = 1
+            if read_data[r][c] == 'o':
+                is_move_poss[r][c] = 2
     return is_move_poss
     
 
@@ -76,7 +78,7 @@ directions = {'up': (0,-1), 'left': (-1,0),'down': (0,1),'right': (1,0)} #a dict
 
 #Defines the generic playable character object. 
 class dude(pygame.sprite.Sprite):    
-    def __init__(self, position = (200,200), imageloc = 'pacman1.bmp'):
+    def __init__(self, position = (200,200), imageloc = 'pacman1.bmp', speed = 5):
 	#Initialize the dood's parameters
         pygame.sprite.Sprite.__init__(self) #call sprite initializer
         self.image, self.rect = load_image(imageloc,-1) #sets its image to the called image
@@ -87,7 +89,9 @@ class dude(pygame.sprite.Sprite):
         self.box = pos_to_box(self.rect.center)
 
         self.vhat = (1,0) #sets initial direction
-        self.speed = 5 #sets speed in pixels (?) per cycle (?)
+        self.speed = speed #sets speed in pixels (?) per cycle (?)
+
+        self.score = 0
 
     def _turn(self, direct, rotate_image = True):
         #takes a string as an input of 'up' 'down' 'left' or 'right' and turns pacman and makes him go in the way you want him to go
@@ -119,11 +123,11 @@ class dude(pygame.sprite.Sprite):
         elif self.rect.bottom > self.area.bottom and self.vhat == directions['down']: #bottom edge
             movingy = 0
         
-        boxpos = pos_to_box((self.rect.center[0] + movingx, self.rect.center[1] + movingy))
+        #boxpos = pos_to_box((self.rect.center[0] + movingx, self.rect.center[1] + movingy))
         
-        if levelmap[boxpos[1]][boxpos[0]]== 0:
-            movingx = 0
-            movingy = 0
+        #if levelmap[boxpos[1]][boxpos[0]]== 1:
+         #   movingx = 0
+          #  movingy = 0
         
         #the next two lines move the dood
         newpos = self.rect.move((movingx,movingy))
@@ -168,7 +172,37 @@ class ghost(dude):
 	#make the next position, the new next move
         self.nextpos = temp_next_move
 
+class dot(pygame.sprite.Sprite):
+    #A dot. They give you points
+    def __init__(self, pos = (100,100), imageloc = 'dot.bmp', value = 10):
+        pygame.sprite.Sprite.__init__(self) #call sprite initializer
+        self.image, self.rect = load_image(imageloc,-1) #sets its image to the called image
+        self.value = value
+        self.rect.center = pos
+        self.box = pos_to_box(pos)
+        self.dead = 0
 
+    def _eaten(self, other):
+        if self.box == other.box:
+            other.score += self.value
+            print(other.score)
+            self.kill()
+    def update(self):
+        self._eaten(pacman)
+        
+
+class dotgroup(pygame.sprite.Group):
+    #a group of the dots and non-player-non-ghost objects
+    def __init__(self, maplist):
+        pygame.sprite.Group.__init__(self)
+        for i in range(len(maplist)):
+            for j in range(len(maplist[i])):
+                newpos = box_to_pos((j,i))
+                if maplist[i][j] == 1:
+                    newdot = dot(newpos)
+                    self.add(newdot)
+                elif maplist[i][j] == 2:
+                    newdot = dot(newpos, 'ghost.bmp', 50)
 pygame.init()
 screen = pygame.display.set_mode((25*18,29*18))
 pygame.display.set_caption('pacman')
@@ -177,6 +211,7 @@ pygame.mouse.set_visible(0)
 background = pygame.Surface(screen.get_size())
 background = background.convert()
 background.fill((0,0,0))
+
 
 if pygame.font:
     font = pygame.font.Font(None,36)
@@ -191,8 +226,9 @@ levelmap = mapgen()
 
 pacman = dude()
 GHOST = ghost()
+DOT = dotgroup(levelmap)
 
-allsprites = pygame.sprite.RenderPlain(pacman, GHOST)
+allsprites = pygame.sprite.RenderPlain(DOT, pacman, GHOST)
 clock = pygame.time.Clock()
 
 while 1:
