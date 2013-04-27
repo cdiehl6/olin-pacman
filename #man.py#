@@ -35,48 +35,15 @@ def load_sound(name):
         raise(SystemExit, message)
     return sound
 
-from math import sqrt, floor
-
+from math import sqrt
 #get the key in the dictionary from the value
-def reverse_lookup(d, v):
-    for k in d:
-        if d[k] == v:
-            return k
-    raise ValueError
-
-def pos_to_box(position = (0,0), boxsize=18):
-    boxx = int(floor(position[0]/boxsize))
-    boxy = int(floor(position[1]/boxsize))
-    return (boxx, boxy)
-
-def box_to_pos(box = (0,0), boxsize=18):
-    posx = int(box[0]*boxsize - floor(boxsize/2))
-    posy = int(box[1]*boxsize - floor(boxsize/2))
-    return (posx, posy)
-
-def mapgen(maptextfile = 'map.txt'):
-    #Open the file and read the entire file
-    with open(maptextfile, 'r') as f:
-        read_data = f.readlines() 
-    #get just the map from the read data
-
-    read_data = read_data[2:]
-    for index in range(len(read_data)):
-        read_data[index] = read_data[index][4:]
-        
-    is_move_poss = [[0 for c in range(len(read_data[1]))] for r in range(len(read_data))]
-    for r in range(len(read_data)):
-        for c in range(len(read_data[r])):
-            if read_data[r][c] == '#':
-                is_move_poss[r][c] = 1
-    return is_move_poss
-    
-
-directions = {'up': (0,-1), 'left': (-1,0),'down': (0,1),'right': (1,0)} #a dictionary that converts from direction to a [x,y] vector or tuple
+def reverse_lookup(d
+directions = {'up': [0,-1], 'left': [-1,0],'down': [0,1],'right':[1,0]} #a dictionary that converts from direction to a [x,y] vector or tuple
+def pos_to_box(position=(0,0)):
 
 #Defines the generic playable character object. 
 class dude(pygame.sprite.Sprite):    
-    def __init__(self, position = (200,200), imageloc = 'pacman1.bmp'):
+    def __init__(self, position = (200,200), imageloc = 'pacman.bmp'):
 	#Initialize the dood's parameters
         pygame.sprite.Sprite.__init__(self) #call sprite initializer
         self.image, self.rect = load_image(imageloc,-1) #sets its image to the called image
@@ -84,26 +51,24 @@ class dude(pygame.sprite.Sprite):
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         self.rect.center = position #sets the position, in pixels, of the center of the dood
-        self.box = pos_to_box(self.rect.center)
 
-        self.vhat = (1,0) #sets initial direction
+        self.vhat = [1,0] #sets initial direction
         self.speed = 5 #sets speed in pixels (?) per cycle (?)
 
-    def _turn(self, direct, rotate_image = True):
+    def _turn(self,direct):
         #takes a string as an input of 'up' 'down' 'left' or 'right' and turns pacman and makes him go in the way you want him to go
         newv=directions[direct] #looks up in the directions dictionary
         if self.vhat == newv: #does nothing when you try to turn in the direction that you're already turning.
             return
         
         self.vhat = newv #sets direction to the direction you are trying to go
-        if rotate_image == True:
-            self.image = self.original #resets the image to its original (left-facing) orientation
-            center = self.rect.center
-            angles = {'up': 90, 'left': 180, 'down': 270, 'right': 0} #dictionary that defines rotation angles
+        self.image = self.original #resets the image to its original (left-facing) orientation
+        center = self.rect.center
+        angles = {'up': 90, 'left': 180, 'down': 270, 'right': 0} #dictionary that defines rotation angles
         
-            rotate = pygame.transform.rotate
-            self.image = rotate(self.original, angles[direct]) #rotates the image from its original position
-            self.rect = self.image.get_rect(center=center) #resets the image's center to its original center.
+        rotate = pygame.transform.rotate
+        self.image = rotate(self.original, angles[direct]) #rotates the image from its original position
+        self.rect = self.image.get_rect(center=center) #resets the image's center to its original center.
         
     def _move(self):
         movingx = self.vhat[0]*self.speed #sets how far it will move in the x direction
@@ -118,25 +83,18 @@ class dude(pygame.sprite.Sprite):
             movingy = 0
         elif self.rect.bottom > self.area.bottom and self.vhat == directions['down']: #bottom edge
             movingy = 0
-        
-        boxpos = pos_to_box((self.rect.center[0] + movingx, self.rect.center[1] + movingy))
-        
-        if levelmap[boxpos[1]][boxpos[0]]== 0:
-            movingx = 0
-            movingy = 0
-        
+
         #the next two lines move the dood
         newpos = self.rect.move((movingx,movingy))
         self.rect = newpos
-        self.box = pos_to_box(self.rect.center)
-    
+            
     def update(self):
         #move the dood
         self._move()
 
 class ghost(dude):
     #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = (20,20), imageloc = 'ghost1.bmp', nextpos = [0,1], target = [-1,-1], vhat = [0,1], chase= False, speed =10):
+    def __init__(self, position = (20,20), imageloc = 'ghost.bmp', nextpos = [0,1], target = [-1,-1], vhat = [0,1], chase= False, speed =10):
 	#Initialize ghost parameters
         dude.__init__(self, position, imageloc)
         self.target = target
@@ -145,7 +103,7 @@ class ghost(dude):
 
     def new_next_pos(self):
 	#Get all possible moves 2 moves in the futre in the order up, left, down, right
-        possmoves = [] 
+        possmoves = []
 	#Remve the current position (the ghost cannot reverse direction)
         possmoves.remove(self.position)
 	#Find the distance from each possible move to the target tile
@@ -170,7 +128,7 @@ class ghost(dude):
 
 
 pygame.init()
-screen = pygame.display.set_mode((25*18,29*18))
+screen = pygame.display.set_mode((500,500))
 pygame.display.set_caption('pacman')
 pygame.mouse.set_visible(0)
 
@@ -187,8 +145,6 @@ if pygame.font:
 screen.blit(background, (0,0))
 pygame.display.flip()
 
-levelmap = mapgen()
-
 pacman = dude()
 GHOST = ghost()
 
@@ -203,18 +159,12 @@ while 1:
         elif event.type == KEYDOWN:
             if event.key == K_LEFT:
                 pacman._turn('left')
-                GHOST._turn('left',False)
             elif event.key == K_RIGHT:
                 pacman._turn('right')
-                GHOST._turn('right',False)
             elif event.key == K_UP:
                 pacman._turn('up')
-                GHOST._turn('up',False)
             elif event.key == K_DOWN:
                 pacman._turn('down')
-                GHOST._turn('down',False)
-            elif event.key == K_ESCAPE:
-                raise SystemExit
     allsprites.update()
     screen.blit(background, (0, 0))
     allsprites.draw(screen)

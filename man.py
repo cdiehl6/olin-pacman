@@ -76,7 +76,7 @@ directions = {'up': (0,-1), 'left': (-1,0),'down': (0,1),'right': (1,0)} #a dict
 
 #Defines the generic playable character object. 
 class dude(pygame.sprite.Sprite):    
-    def __init__(self, position = (200,200), imageloc = 'pacman.bmp'):
+    def __init__(self, position = (200,200), imageloc = 'pacman1.bmp'):
 	#Initialize the dood's parameters
         pygame.sprite.Sprite.__init__(self) #call sprite initializer
         self.image, self.rect = load_image(imageloc,-1) #sets its image to the called image
@@ -118,7 +118,13 @@ class dude(pygame.sprite.Sprite):
             movingy = 0
         elif self.rect.bottom > self.area.bottom and self.vhat == directions['down']: #bottom edge
             movingy = 0
-
+        
+        boxpos = pos_to_box((self.rect.center[0] + movingx, self.rect.center[1] + movingy))
+        
+        if levelmap[boxpos[1]][boxpos[0]]== 0:
+            movingx = 0
+            movingy = 0
+        
         #the next two lines move the dood
         newpos = self.rect.move((movingx,movingy))
         self.rect = newpos
@@ -130,7 +136,7 @@ class dude(pygame.sprite.Sprite):
 
 class ghost(dude):
     #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = (20,20), imageloc = 'ghost.bmp', nextpos = [0,1], target = [-1,-1], vhat = [0,1], chase= False, speed =10):
+    def __init__(self, position = (20,20), imageloc = 'ghost1.bmp', nextpos = [0,1], target = [-1,-1], vhat = [0,1], chase= False, speed =10):
 	#Initialize ghost parameters
         dude.__init__(self, position, imageloc)
         self.target = target
@@ -164,7 +170,7 @@ class ghost(dude):
 
 
 pygame.init()
-screen = pygame.display.set_mode((500,500))
+screen = pygame.display.set_mode((25*18,29*18))
 pygame.display.set_caption('pacman')
 pygame.mouse.set_visible(0)
 
