@@ -69,7 +69,7 @@ def mapgen(maptextfile = 'map.txt'):
         for c in range(len(read_data[r])):
             if read_data[r][c] == '#':
                 is_move_poss[r][c] = 1
-            if read_data[r][c] == 'o':
+            elif read_data[r][c] == 'O':
                 is_move_poss[r][c] = 2
     return is_move_poss
     
@@ -220,7 +220,7 @@ class dot(pygame.sprite.Sprite):
     #A dot. They give you points
     def __init__(self, pos = (100,100), imageloc = 'dot.bmp', value = 10):
         pygame.sprite.Sprite.__init__(self) #call sprite initializer
-        self.image, self.rect = load_image(imageloc,-1) #sets its image to the called image
+        self.image, self.rect = load_image(imageloc,None) #sets its image to the called image
         self.value = value
         self.rect.center = pos
         self.box = pos_to_box(pos)
@@ -246,7 +246,8 @@ class dotgroup(pygame.sprite.Group):
                     newdot = dot(newpos)
                     self.add(newdot)
                 elif maplist[i][j] == 2:
-                    newdot = dot(newpos, 'ghost.bmp', 50)
+                    newdot = dot(newpos, 'megadot.bmp', 50)
+                    self.add(newdot)
 pygame.init()
 screen = pygame.display.set_mode((25*18,29*18))
 pygame.display.set_caption('pacman')
