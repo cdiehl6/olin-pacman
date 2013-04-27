@@ -148,7 +148,7 @@ class ghost(dude):
     def get_poss_moves(self):
         possmoves = []
         dir_order = ['up','left','down','right']
-
+        dir_order.remove(reverse_lookup(directions,(-1*self.vhat[0], -1*self.vhat[1])))
         for direct in dir_order:
             temp_vhat = directions[direct]
             temp_new_pos = (self.nextpos[0] + temp_vhat[0]*self.speed, self.nextpos[1]+ temp_vhat[1]*self.speed)
@@ -179,38 +179,16 @@ class ghost(dude):
         movingx =  self.nextpos[0]-self.rect.center[0]
         movingy =  self.nextpos[1]-self.rect.center[1]
         newpos = self.rect.move(movingx,movingy)
+        vhat = (movingx/self.speed, movingy/self.speed)
         self.rect = newpos
         self.box = pos_to_box(self.rect.center)
 	self.nextpos = temp_next_move
+        dirstr = reverse_lookup(directions,vhat)
+        self._turn(dirstr,rotate_image = False)
     def update_target(self,pacman_pos):
         self.target = pacman_pos
 
-    '''
-    def _move(self):
-        movingx = self.vhat[0]*self.speed #sets how far it will move in the x direction
-        movingy = self.vhat[1]*self.speed #sets how far it will move in the y direction
 
-        #the following if/elif block makes the dood stop if it hits the side of the window.
-        if self.rect.left<self.area.left and self.vhat==directions['left']: #left edge
-            movingx = 0
-        elif self.rect.right>self.area.right and self.vhat == directions['right']: #right edge
-            movingx = 0
-        elif self.rect.top < self.area.top and self.vhat==directions['up']: #top edge
-            movingy = 0
-        elif self.rect.bottom > self.area.bottom and self.vhat == directions['down']: #bottom edge
-            movingy = 0
-        
-        boxpos = pos_to_box((self.rect.center[0] + movingx, self.rect.center[1] + movingy))
-        
-        if levelmap[boxpos[1]][boxpos[0]]== 0:
-            movingx = 0
-            movingy = 0
-        
-        #the next two lines move the dood
-        newpos = self.rect.move((movingx,movingy))
-        self.rect = newpos
-        self.box = pos_to_box(self.rect.center)
-'''
 
 
 pygame.init()
