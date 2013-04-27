@@ -121,9 +121,9 @@ class dude(pygame.sprite.Sprite):
         
         boxpos = pos_to_box((self.rect.center[0] + movingx, self.rect.center[1] + movingy))
         
-        if levelmap[boxpos[1]][boxpos[0]]== 0:
+        '''if levelmap[boxpos[1]][boxpos[0]]== 0:
             movingx = 0
-            movingy = 0
+            movingy = 0'''
         
         #the next two lines move the dood
         newpos = self.rect.move((movingx,movingy))
@@ -136,18 +136,32 @@ class dude(pygame.sprite.Sprite):
 
 class ghost(dude):
     #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = (20,20), imageloc = 'ghost1.bmp', nextpos = [0,1], target = [-1,-1], vhat = [0,1], chase= False, speed =10):
+    def __init__(self, position = (200,200), imageloc = 'ghost1.bmp', nextpos = (200,205), target = (500,500), vhat = (0,1), chase= False):
 	#Initialize ghost parameters
         dude.__init__(self, position, imageloc)
         self.target = target
         self.chase = chase
         self.nextpos = nextpos
+        self.vhat = (1,0) #sets initial direction
+        self.speed = 4#sets speed in pixels (?) per cycle (?)
 
+    def get_poss_moves(self):
+        possmoves = []
+        dir_order = ['up','left','down','right']
+
+        for direct in dir_order:
+            temp_vhat = directions[direct]
+            temp_new_pos = (self.nextpos[0] + temp_vhat[0]*self.speed, self.nextpos[1]+ temp_vhat[1]*self.speed)
+            temp_box_pos = pos_to_box(temp_new_pos)
+            ''' if levelmap[temp_box_pos[1]][temp_box_pos[0]]==1:
+                possmoves.append(temp_new_pos)'''
+            possmoves.append(temp_new_pos)
+        return possmoves
+            
+            
     def new_next_pos(self):
 	#Get all possible moves 2 moves in the futre in the order up, left, down, right
-        possmoves = [] 
-	#Remve the current position (the ghost cannot reverse direction)
-        possmoves.remove(self.position)
+        possmoves = self.get_poss_moves()
 	#Find the distance from each possible move to the target tile
         possdist = []
         for move in possmoves:
@@ -160,13 +174,43 @@ class ghost(dude):
 	#Return the new next position
         return possmoves[leastdistindex]
 	
-    def make_move(self):
-	#Get the new next move
-        temp_next_move = self.new_next_pos
-	#Make the current positon the old next position
-        self.position = self.nextpos
-	#make the next position, the new next move
-        self.nextpos = temp_next_move
+    def _move(self):
+        temp_next_move = self.new_next_pos()
+        movingx =  self.nextpos[0]-self.rect.center[0]
+        movingy =  self.nextpos[1]-self.rect.center[1]
+        newpos = self.rect.move(movingx,movingy)
+        self.rect = newpos
+        self.box = pos_to_box(self.rect.center)
+	self.nextpos = temp_next_move
+    def update_target(self,pacman_pos):
+        self.target = pacman_pos
+
+    '''
+    def _move(self):
+        movingx = self.vhat[0]*self.speed #sets how far it will move in the x direction
+        movingy = self.vhat[1]*self.speed #sets how far it will move in the y direction
+
+        #the following if/elif block makes the dood stop if it hits the side of the window.
+        if self.rect.left<self.area.left and self.vhat==directions['left']: #left edge
+            movingx = 0
+        elif self.rect.right>self.area.right and self.vhat == directions['right']: #right edge
+            movingx = 0
+        elif self.rect.top < self.area.top and self.vhat==directions['up']: #top edge
+            movingy = 0
+        elif self.rect.bottom > self.area.bottom and self.vhat == directions['down']: #bottom edge
+            movingy = 0
+        
+        boxpos = pos_to_box((self.rect.center[0] + movingx, self.rect.center[1] + movingy))
+        
+        if levelmap[boxpos[1]][boxpos[0]]== 0:
+            movingx = 0
+            movingy = 0
+        
+        #the next two lines move the dood
+        newpos = self.rect.move((movingx,movingy))
+        self.rect = newpos
+        self.box = pos_to_box(self.rect.center)
+'''
 
 
 pygame.init()
@@ -203,19 +247,16 @@ while 1:
         elif event.type == KEYDOWN:
             if event.key == K_LEFT:
                 pacman._turn('left')
-                GHOST._turn('left',False)
             elif event.key == K_RIGHT:
                 pacman._turn('right')
-                GHOST._turn('right',False)
             elif event.key == K_UP:
                 pacman._turn('up')
-                GHOST._turn('up',False)
             elif event.key == K_DOWN:
                 pacman._turn('down')
-                GHOST._turn('down',False)
             elif event.key == K_ESCAPE:
                 raise SystemExit
     allsprites.update()
+    GHOST.update_target(pacman.rect.center)
     screen.blit(background, (0, 0))
     allsprites.draw(screen)
     pygame.display.flip()
