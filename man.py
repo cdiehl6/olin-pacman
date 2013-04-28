@@ -150,7 +150,6 @@ class player(dude):
     def __init__(self, position = (200,200), imageloc = 'pacman1.bmp', speed = 5, vhat = (1,0)):
         dude.__init__(self, position, imageloc, speed, vhat)
         self.original = self.image
-        self.score = 0
 
     def _turn(self, direct):
         #takes a string as an input of 'up' 'down' 'left' or 'right' and turns pacman and makes him go in the way you want him to go
@@ -207,8 +206,8 @@ class dot(pygame.sprite.Sprite):
 
     def _eaten(self, other):
         if self.box == other.box:
-            other.score += self.value
-            print(other.score)
+            SCORE.val += self.value
+            print(SCORE.val)
             self.kill()
 
     def update(self):
@@ -229,6 +228,18 @@ class dotgroup(pygame.sprite.Group):
                     newdot = dot(newpos, 'megadot.bmp', 50)
                     self.add(newdot)
 
+class score(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.font = pygame.font.Font(None, 20)
+        self.val = 0
+        self.update()
+        self.rect = self.image.get_rect().move(100,100)
+
+    def update(self):
+        message = "Score: %d" % self.val
+        self.image = self.font.render(message, 0, (250,250,250))
+        
 pygame.init()
 screen = pygame.display.set_mode((25*18,29*18))
 pygame.display.set_caption('pacman')
@@ -253,8 +264,9 @@ levelmap = mapgen()
 pacman = player()
 GHOST = ghost()
 DOT = dotgroup(levelmap)
+SCORE = score()
 
-allsprites = pygame.sprite.RenderPlain(DOT, pacman, GHOST)
+allsprites = pygame.sprite.RenderPlain(DOT, pacman, GHOST, SCORE)
 clock = pygame.time.Clock()
 
 while 1:
