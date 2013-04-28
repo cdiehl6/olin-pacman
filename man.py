@@ -96,14 +96,14 @@ class dude(pygame.sprite.Sprite):
 
 class ghost(dude):
     #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = (400,400), imageloc = 'ghost1.bmp', speed=5, nextpos = (200,205), target = (500,500), vhat = (1,0), chase= False):
+    def __init__(self, position = (400,400), imageloc = 'ghost1.bmp', speed=2.5, nextpos = (200,205), target = (500,500), vhat = (1,0), chase= False):
 	#Initialize ghost parameters
         dude.__init__(self, position, imageloc, speed)
         self.target = target
         self.chase = chase
         self.nextpos = nextpos
         self.vhat = vhat #sets initial direction
-        self.speed = speed #sets speed 
+        self.speed = speed #sets speed
 
     def get_poss_moves(self):
         possmoves = []
@@ -197,7 +197,6 @@ class player(dude):
         self.rect = newpos
         self.box = pos_to_box(self.rect.center)
         self.isdead(GHOST)
-        
 
 class dot(pygame.sprite.Sprite):
     #A dot. They give you points
@@ -212,12 +211,10 @@ class dot(pygame.sprite.Sprite):
     def _eaten(self, other):
         if self.box == other.box:
             SCORE.val += self.value
-            print(SCORE.val)
             self.kill()
 
     def update(self):
-        self._eaten(pacman)
-        
+        self._eaten(pacman)        
 
 class dotgroup(pygame.sprite.Group):
     #a group of the dots and non-player-non-ghost objects
@@ -225,7 +222,7 @@ class dotgroup(pygame.sprite.Group):
         pygame.sprite.Group.__init__(self)
         for i in range(len(maplist)):
             for j in range(len(maplist[i])):
-                newpos = box_to_pos((j,i))
+                newpos = box_to_pos((j+1,i+1))
                 if maplist[i][j] == 1:
                     newdot = dot(newpos)
                     self.add(newdot)
@@ -234,32 +231,26 @@ class dotgroup(pygame.sprite.Group):
                     self.add(newdot)
 
 class score(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, pos= (300,300)):
         pygame.sprite.Sprite.__init__(self)
         self.font = pygame.font.Font(None, 20)
         self.val = 0
         self.update()
-        self.rect = self.image.get_rect().move(100,100)
+        self.rect = self.image.get_rect().move(pos)
 
     def update(self):
-        message = "Score: %d" % self.val
-        self.image = self.font.render(message, 0, (250,250,250))
-        
+        self.message = "Score: %d" % self.val
+        self.image = self.font.render(self.message, 0, (250,250,250))
+
+
 pygame.init()
 screen = pygame.display.set_mode((25*18,29*18))
-pygame.display.set_caption('pacman')
+pygame.display.set_caption('PacMan')
 pygame.mouse.set_visible(0)
 
 background = pygame.Surface(screen.get_size())
 background = background.convert()
 background.fill((0,0,0))
-
-
-if pygame.font:
-    font = pygame.font.Font(None,36)
-    text = font.render("PACMAN!", 1, (255,255,255))
-    textpos=text.get_rect(centerx=background.get_width()/2)
-    background.blit(text, textpos)
 
 screen.blit(background, (0,0))
 pygame.display.flip()
@@ -290,6 +281,7 @@ while 1:
                 pacman._turn('down')
             elif event.key == K_ESCAPE:
                 raise SystemExit
+
     allsprites.update()
     GHOST.update_target(pacman.rect.center)
     screen.blit(background, (0, 0))
