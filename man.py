@@ -96,7 +96,7 @@ class dude(pygame.sprite.Sprite):
 
 class ghost(dude):
     #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = (100,100), imageloc = 'ghost1.bmp', speed=4, nextpos = (200,205), target = (500,500), vhat = (1,0), chase= False):
+    def __init__(self, position = (400,400), imageloc = 'ghost1.bmp', speed=4, nextpos = (200,205), target = (500,500), vhat = (1,0), chase= False):
 	#Initialize ghost parameters
         dude.__init__(self, position, imageloc, speed)
         self.target = target
@@ -168,6 +168,11 @@ class player(dude):
         rotate = pygame.transform.rotate
         self.image = rotate(self.original, angles[direct]) #rotates the image from its original position
         self.rect = self.image.get_rect(center=center) #resets the image's center to its original center.
+
+    def isdead(self, other):
+        if self.rect.center == other.rect.center:
+            self.kill()
+            print "I'm DEAD! I'm ALIVE BUT I'M DEAD!"
         
     def _move(self):
         movingx = self.vhat[0]*self.speed #sets how far it will move in the x direction
@@ -187,11 +192,7 @@ class player(dude):
         newpos = self.rect.move((movingx,movingy))
         self.rect = newpos
         self.box = pos_to_box(self.rect.center)
-
-    def isdead(self, other):
-        if self.rect.center == other.rect.center:
-            self.kill()
-            print "I'm DEAD! I'm ALIVE BUT I'M DEAD!"
+        self.isdead(GHOST)
         
 
 class dot(pygame.sprite.Sprite):
