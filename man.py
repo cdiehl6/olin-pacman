@@ -79,7 +79,7 @@ directions = {'up': (0,-1), 'left': (-1,0),'down': (0,1),'right': (1,0)} #a dict
 #Defines the generic playable character object. 
 class dude(pygame.sprite.Sprite):    
     def __init__(self, position = (200,200), imageloc = 'pacman1.bmp', speed = 5):
-	#Initialize the dood's parameters
+	#Initialize the dood's parameers
         pygame.sprite.Sprite.__init__(self) #call sprite initializer
         self.image, self.rect = load_image(imageloc,-1) #sets its image to the called image
         self.original = self.image #sets an unchanging image as its default orientation (facing left) (yes, that's important for how the function turns things later)
@@ -87,6 +87,9 @@ class dude(pygame.sprite.Sprite):
         self.area = screen.get_rect()
         self.rect.center = position #sets the position, in pixels, of the center of the dood
         self.box = pos_to_box(self.rect.center)
+
+        print self.rect.center
+        print self.box
 
         self.vhat = (1,0) #sets initial direction
         self.speed = speed #sets speed in pixels (?) per cycle (?)
@@ -133,21 +136,27 @@ class dude(pygame.sprite.Sprite):
         newpos = self.rect.move((movingx,movingy))
         self.rect = newpos
         self.box = pos_to_box(self.rect.center)
-    
+
+    def isdead(self, other):
+        if self.rect.center == other.rect.center:
+            self.kill()
+            print "I'm DEAD! I'm ALIVE BUT I'M DEAD!"
+
     def update(self):
         #move the dood
         self._move()
+#        self.isdead(GHOST)
 
 class ghost(dude):
     #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = (200,200), imageloc = 'ghost1.bmp', nextpos = (200,205), target = (500,500), vhat = (0,1), chase= False):
+    def __init__(self, position = (100,100), imageloc = 'ghost1.bmp', speed=4, nextpos = (200,205), target = (500,500), vhat = (1,0), chase= False):
 	#Initialize ghost parameters
-        dude.__init__(self, position, imageloc)
+        dude.__init__(self, position, imageloc, speed)
         self.target = target
         self.chase = chase
         self.nextpos = nextpos
-        self.vhat = (1,0) #sets initial direction
-        self.speed = 4#sets speed in pixels (?) per cycle (?)
+        self.vhat = vhat #sets initial direction
+        self.speed = speed #sets speed 
 
     def get_poss_moves(self):
         possmoves = []
@@ -186,6 +195,7 @@ class ghost(dude):
         self.rect = newpos
         self.box = pos_to_box(self.rect.center)
 	self.nextpos = temp_next_move
+
     def update_target(self,pacman_pos):
         self.target = pacman_pos
 
@@ -231,6 +241,7 @@ class dot(pygame.sprite.Sprite):
             other.score += self.value
             print(other.score)
             self.kill()
+
     def update(self):
         self._eaten(pacman)
         
@@ -248,6 +259,7 @@ class dotgroup(pygame.sprite.Group):
                 elif maplist[i][j] == 2:
                     newdot = dot(newpos, 'megadot.bmp', 50)
                     self.add(newdot)
+
 pygame.init()
 screen = pygame.display.set_mode((25*18,29*18))
 pygame.display.set_caption('pacman')
