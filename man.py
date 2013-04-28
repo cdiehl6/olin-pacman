@@ -96,7 +96,7 @@ class dude(pygame.sprite.Sprite):
 
 class ghost(dude):
     #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = (400,400), imageloc = 'ghost1.bmp', speed=4, nextpos = (200,205), target = (500,500), vhat = (1,0), chase= False):
+    def __init__(self, position = (400,400), imageloc = 'ghost1.bmp', speed=5, nextpos = (200,205), target = (500,500), vhat = (1,0), chase= False):
 	#Initialize ghost parameters
         dude.__init__(self, position, imageloc, speed)
         self.target = target
@@ -135,16 +135,21 @@ class ghost(dude):
         return possmoves[leastdistindex]
 	
     def _move(self):
+        if self.rect.center == self.target:
+            movingx = 0
+            movingy = 0
+        else:
+            
+            movingx =  self.nextpos[0]-self.rect.center[0]
+            movingy =  self.nextpos[1]-self.rect.center[1]
         temp_next_move = self.new_next_pos()
-        movingx =  self.nextpos[0]-self.rect.center[0]
-        movingy =  self.nextpos[1]-self.rect.center[1]
         newpos = self.rect.move(movingx,movingy)
         self.rect = newpos
         self.box = pos_to_box(self.rect.center)
 	self.nextpos = temp_next_move
 
     def update_target(self,pacman_pos):
-        self.target = box_to_pos(pos_to_box(pacman_pos))
+        self.target = pacman_pos
 
 class player(dude):
     def __init__(self, position = (200,200), imageloc = 'pacman1.bmp', speed = 5, vhat = (1,0)):
