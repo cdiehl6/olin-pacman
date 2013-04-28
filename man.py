@@ -144,7 +144,7 @@ class ghost(dude):
 	self.nextpos = temp_next_move
 
     def update_target(self,pacman_pos):
-        self.target = pacman_pos
+        self.target = box_to_pos(pos_to_box(pacman_pos))
 
 class player(dude):
     def __init__(self, position = (200,200), imageloc = 'pacman1.bmp', speed = 5, vhat = (1,0)):
