@@ -197,7 +197,7 @@ class ghost(dude):
 	self.nextpos = temp_next_move
 
     def update_target(self,pacman_pos):
-        self.target = pacman_pos
+        self.target = box_to_pos(pos_to_box(pacman_pos))
 
     '''
     def _move(self):
