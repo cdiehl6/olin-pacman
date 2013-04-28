@@ -72,80 +72,27 @@ def mapgen(maptextfile = 'map.txt'):
             elif read_data[r][c] == 'O':
                 is_move_poss[r][c] = 2
     return is_move_poss
-    
 
 directions = {'up': (0,-1), 'left': (-1,0),'down': (0,1),'right': (1,0)} #a dictionary that converts from direction to a [x,y] vector or tuple
 
-#Defines the generic playable character object. 
+#Defines our generic sprite
 class dude(pygame.sprite.Sprite):    
-    def __init__(self, position = (200,200), imageloc = 'pacman1.bmp', speed = 5):
+    def __init__(self, position = (200,200), imageloc = 'pacman1.bmp', speed = 5, vhat = (1,0)):
 	#Initialize the dood's parameers
         pygame.sprite.Sprite.__init__(self) #call sprite initializer
         self.image, self.rect = load_image(imageloc,-1) #sets its image to the called image
-        self.original = self.image #sets an unchanging image as its default orientation (facing left) (yes, that's important for how the function turns things later)
+
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         self.rect.center = position #sets the position, in pixels, of the center of the dood
         self.box = pos_to_box(self.rect.center)
 
-        print self.rect.center
-        print self.box
-
-        self.vhat = (1,0) #sets initial direction
+        self.vhat = vhat #sets initial direction
         self.speed = speed #sets speed in pixels (?) per cycle (?)
-
-        self.score = 0
-
-    def _turn(self, direct, rotate_image = True):
-        #takes a string as an input of 'up' 'down' 'left' or 'right' and turns pacman and makes him go in the way you want him to go
-        newv=directions[direct] #looks up in the directions dictionary
-        if self.vhat == newv: #does nothing when you try to turn in the direction that you're already turning.
-            return
-        
-        self.vhat = newv #sets direction to the direction you are trying to go
-        if rotate_image == True:
-            self.image = self.original #resets the image to its original (left-facing) orientation
-            center = self.rect.center
-            angles = {'up': 90, 'left': 180, 'down': 270, 'right': 0} #dictionary that defines rotation angles
-        
-            rotate = pygame.transform.rotate
-            self.image = rotate(self.original, angles[direct]) #rotates the image from its original position
-            self.rect = self.image.get_rect(center=center) #resets the image's center to its original center.
-        
-    def _move(self):
-        movingx = self.vhat[0]*self.speed #sets how far it will move in the x direction
-        movingy = self.vhat[1]*self.speed #sets how far it will move in the y direction
-
-        #the following if/elif block makes the dood stop if it hits the side of the window.
-        if self.rect.left<self.area.left and self.vhat==directions['left']: #left edge
-            movingx = 0
-        elif self.rect.right>self.area.right and self.vhat == directions['right']: #right edge
-            movingx = 0
-        elif self.rect.top < self.area.top and self.vhat==directions['up']: #top edge
-            movingy = 0
-        elif self.rect.bottom > self.area.bottom and self.vhat == directions['down']: #bottom edge
-            movingy = 0
-        
-        #boxpos = pos_to_box((self.rect.center[0] + movingx, self.rect.center[1] + movingy))
-        
-        #if levelmap[boxpos[1]][boxpos[0]]== 1:
-         #   movingx = 0
-          #  movingy = 0
-        
-        #the next two lines move the dood
-        newpos = self.rect.move((movingx,movingy))
-        self.rect = newpos
-        self.box = pos_to_box(self.rect.center)
-
-    def isdead(self, other):
-        if self.rect.center == other.rect.center:
-            self.kill()
-            print "I'm DEAD! I'm ALIVE BUT I'M DEAD!"
 
     def update(self):
         #move the dood
         self._move()
-#        self.isdead(GHOST)
 
 class ghost(dude):
     #Dictionary to go from direction to direction unit vector
@@ -199,7 +146,29 @@ class ghost(dude):
     def update_target(self,pacman_pos):
         self.target = pacman_pos
 
-    '''
+class player(dude):
+    def __init__(self, position = (200,200), imageloc = 'pacman1.bmp', speed = 5, vhat = (1,0)):
+        dude.__init__(self, position, imageloc, speed, vhat)
+        self.original = self.image
+        self.score = 0
+
+    def _turn(self, direct):
+        #takes a string as an input of 'up' 'down' 'left' or 'right' and turns pacman and makes him go in the way you want him to go
+        newv=directions[direct] #looks up in the directions dictionary
+
+        if self.vhat == newv: #does nothing when you try to turn in the direction that you're already turning.
+            return
+        
+        self.vhat = newv #sets direction to the direction you are trying to go
+
+        self.image = self.original #resets the image to its original (left-facing) orientation
+        center = self.rect.center
+        angles = {'up': 90, 'left': 180, 'down': 270, 'right': 0} #dictionary that defines rotation angles
+        
+        rotate = pygame.transform.rotate
+        self.image = rotate(self.original, angles[direct]) #rotates the image from its original position
+        self.rect = self.image.get_rect(center=center) #resets the image's center to its original center.
+        
     def _move(self):
         movingx = self.vhat[0]*self.speed #sets how far it will move in the x direction
         movingy = self.vhat[1]*self.speed #sets how far it will move in the y direction
@@ -213,18 +182,17 @@ class ghost(dude):
             movingy = 0
         elif self.rect.bottom > self.area.bottom and self.vhat == directions['down']: #bottom edge
             movingy = 0
-        
-        boxpos = pos_to_box((self.rect.center[0] + movingx, self.rect.center[1] + movingy))
-        
-        if levelmap[boxpos[1]][boxpos[0]]== 0:
-            movingx = 0
-            movingy = 0
-        
-        #the next two lines move the dood
+
+        #move the dude!
         newpos = self.rect.move((movingx,movingy))
         self.rect = newpos
         self.box = pos_to_box(self.rect.center)
-'''
+
+    def isdead(self, other):
+        if self.rect.center == other.rect.center:
+            self.kill()
+            print "I'm DEAD! I'm ALIVE BUT I'M DEAD!"
+        
 
 class dot(pygame.sprite.Sprite):
     #A dot. They give you points
@@ -281,7 +249,7 @@ pygame.display.flip()
 
 levelmap = mapgen()
 
-pacman = dude()
+pacman = player()
 GHOST = ghost()
 DOT = dotgroup(levelmap)
 
