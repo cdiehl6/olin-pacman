@@ -97,7 +97,7 @@ class dude(pygame.sprite.Sprite):
 
 class ghost(dude):
     #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = (100,100), imageloc = 'ghost1.bmp', speed=2, target = (0,0), vhat = (1,0), chase= False):
+    def __init__(self, position = box_to_pos((2,5)), imageloc = 'ghost1.bmp', speed=2, target = (0,0), vhat = (1,0), chase= False):
 	#Initialize ghost parameters
         dude.__init__(self, position, imageloc, speed)
         self.target = target
@@ -111,13 +111,17 @@ class ghost(dude):
         possmoves = []
         dir_order = ['up','left','down','right']
         dir_order.remove(reverse_lookup(directions,(-1*self.vhat[0], -1*self.vhat[1])))
+        validmove = True
+        corneroffsets = ((8,-8),(-8,-8),(-8,8),(8,8))
         for direct in dir_order:
             temp_vhat = directions[direct]
             temp_new_pos = (self.nextpos[0] + temp_vhat[0]*self.speed, self.nextpos[1]+ temp_vhat[1]*self.speed)
             temp_box_pos = pos_to_box(temp_new_pos)
-            ''' if levelmap[temp_box_pos[1]][temp_box_pos[0]]==1:
-                possmoves.append(temp_new_pos)'''
-            possmoves.append(temp_new_pos)
+            if not levelmap[temp_box_pos[1]][temp_box_pos[0]]:
+                validmove = False
+            if validmove:
+                possmoves.append(temp_new_pos)
+            validmove = True
         return possmoves            
             
     def new_next_pos(self):
