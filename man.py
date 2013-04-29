@@ -31,11 +31,46 @@ def load_sound(name):
     try:
         sound = pygame.mixer.Sound(fullname)
     except pygame.error, message:
-        print('Cannot load sound:', wav)
+        print('Cannot load sound:', name)
         raise(SystemExit, message)
     return sound
 
 from math import sqrt, floor
+import pickle
+
+#highscore things
+
+def highscore_load(filename = 'highscore.txt'):
+    fullname = os.path.join('data', filename)
+    try:
+        with open(fullname, 'r+') as f:
+            return pickle.load(f)
+    except:
+        print('Cannot load highscore file')
+        raise(SystemExit)
+
+highscores = highscore_load()
+alltimehigh = highscores[0][0]
+       
+def new_highscore(score = 0, name = 'Mitch', highscorelist = highscores, filename = 'highscore.txt'):
+    newscore = (score, name)
+    highscorelist.append(newscore) #add new score to list
+    highscorelist.sort(reverse = True)  #sort by score
+    highscorelist.pop() #removes lowest score
+    print highscorelist
+    fullname = os.path.join('data',filename)
+    with open(fullname, 'r+') as f:
+        pickle.dump(highscorelist, f)
+
+def check_highscore(score = 5, highscorelist = highscores):
+    for pair in highscorelist:
+        if score > pair[0]:
+            name = raw_input('You got a high score, what is your name? ')
+            new_highscore(score,name)
+            return
+    return
+
+#end of highscore things
 
 #get the key in the dictionary from the value
 def reverse_lookup(d, v):
@@ -213,6 +248,7 @@ class dot(pygame.sprite.Sprite):
         if self.box == other.box:
             SCORE.val += self.value
             self.kill()
+
 
     def update(self):
         self._eaten(pacman)        
