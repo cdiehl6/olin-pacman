@@ -1,7 +1,7 @@
 import ConfigParser
 
 class Level(object):
-    def load_file(self, filename="level.map")
+    def load_file(self, filename="level.map"):
         self.map=[]
         self.key={}
         parser=ConfigParser.ConfigParser()
@@ -45,7 +45,7 @@ class Level(object):
     def render(self):
         wall = self.is_wall
         tiles = MAP_CACHE[self.tileset]
-        image = pygame.Surface((self.width*MAP_TILE_WIDTH, self.height*MAP_TILE_HEIGHT))
+        image = pygame.Surface((self.width*18, self.height*18))
         overlays = {}
         for map_y, line in enumerate(self.map):
             for map_x, c in enumerate(line):
@@ -69,17 +69,6 @@ class Level(object):
                             tile = 2, 1
                         else:
                             tile = 3, 1
-                    # Add overlays if the wall may be obscuring something
-                    if not wall(map_x, map_y-1):
-                        if wall(map_x+1, map_y) and wall(map_x-1, map_y):
-                            over = 1, 0
-                        elif wall(map_x+1, map_y):
-                            over = 0, 0
-                        elif wall(map_x-1, map_y):
-                            over = 2, 0
-                        else:
-                            over = 3, 0
-                        overlays[(map_x, map_y)] = tiles[over[0]][over[1]]
                 else:
                     try:
                         tile = self.key[c]['tile'].split(',')

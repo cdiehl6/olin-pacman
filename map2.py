@@ -28,32 +28,33 @@ def load_tile_table(filename, width, height):
 #        pass
 
 class Level(object):
+
    def load_file(self,filename="level.map"):
         self.map=[]
         self.key={}
         parser=ConfigParser.ConfigParser()
         parser.read(filename)
         self.tileset=parser.get("LEVEL","map").split("\n")
-        print(self.tileset)
+        #print(self.tileset)
         for section in parser.sections():
             if len(section)==1:
                 #print ('hi')
                 desc=dict(parser.items(section))
                 self.key[section]=desc
-        self.width=25#len(self.map[1])
-        self.height=29#len(self.map)
-   def get_tile(self,x,y):
+        self.width=25
+        self.height=29
+
+   def tile(self,x,y):
         try:
             char=self.map[y][x]
-            print (char)
+            print ('hi')
         except IndexError:
             return {}
         try:
             return self.key[char]
         except KeyError:
             return {}
-   def tile(self,x,y):
-        return self.get_tile(x,y)
+
    def render(self):
         wall =self.tile
         #print (self.tile)
@@ -82,19 +83,15 @@ class Level(object):
 
 if __name__ == "__main__":
     screen = pygame.display.set_mode((424, 320))
-
     MAP_TILE_WIDTH = 18
     MAP_TILE_HEIGHT = 18
     MAP_CACHE = {
         'pacmantiles.png': load_tile_table('pacmantiles.png', MAP_TILE_WIDTH,MAP_TILE_HEIGHT)
 }
-
     level = Level()
     level.load_file('level.map')
-
     clock = pygame.time.Clock()
     #print ('hello')
-
     background, overlay_dict = level.render()
     overlays = pygame.sprite.RenderUpdates()
     for (x, y), image in overlay_dict.iteritems():
@@ -106,9 +103,7 @@ if __name__ == "__main__":
     pygame.display.flip()
 game_over = False
 while not game_over:
-
     # XXX draw all the objects here
-
     overlays.draw(screen)
     pygame.display.flip()
     clock.tick(15)
