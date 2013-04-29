@@ -188,7 +188,7 @@ class player(dude):
         self.rect = self.image.get_rect(center=center) #resets the image's center to its original center.
 
     def isdead(self, other):
-        if self.rect.center == other.rect.center:
+        if self.box == other.box:
             self.kill()
             print "I'm DEAD! I'm ALIVE BUT I'M DEAD!"
         
@@ -258,8 +258,8 @@ class score(pygame.sprite.Sprite):
         self.image = self.font.render(self.message, 0, (250,250,250))
 
 class highscore(pygame.sprite.Sprite):
-    def __init__(self, filename = 'highscore.txt'):
-        pygame.sprite.Sprite.__init__()
+    def __init__(self, filename = 'highscore.txt', pos = (300,350)):
+        pygame.sprite.Sprite.__init__(self)
         self.fullname = os.path.join('data', filename)
         try:
             with open(self.fullname, 'r+') as f:
@@ -267,8 +267,11 @@ class highscore(pygame.sprite.Sprite):
         except:
             print('Cannot load highscore file')
             raise(SystemExit)
-        
         self.alltime = self.list[0][0]
+
+        self.font = pygame.font.Font(None,20)
+        self.update()
+        self.rect = self.image.get_rect().move(pos)
        
     def new_highscore(self, score = 0, name = 'Mitch'):
         newscore = (score, name)
@@ -289,9 +292,10 @@ class highscore(pygame.sprite.Sprite):
 
     def update(self):
         if SCORE.val >= self.alltime:
-            self.alltime = current
-        else:
-            return self.alltime
+            self.alltime = SCORE.val
+        
+        self.message = "Highscore: %d" % self.alltime
+        self.image = self.font.render(self.message, 0, (250,250,250))
 
 pygame.init()
 levelmap = mapgen()
@@ -313,8 +317,9 @@ pacman = player()
 GHOST = ghost()
 DOT = dotgroup(levelmap)
 SCORE = score()
+HIGHSCORE = highscore()
 
-allsprites = pygame.sprite.RenderPlain(DOT, pacman, GHOST, SCORE)
+allsprites = pygame.sprite.RenderPlain(DOT, pacman, GHOST, SCORE, HIGHSCORE)
 clock = pygame.time.Clock()
 paused = False
 
