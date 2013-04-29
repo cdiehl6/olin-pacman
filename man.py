@@ -77,7 +77,7 @@ directions = {'up': (0,-1), 'left': (-1,0),'down': (0,1),'right': (1,0)} #a dict
 
 #Defines our generic sprite
 class dude(pygame.sprite.Sprite):    
-    def __init__(self, position = (200,200), imageloc = 'pacman1.bmp', speed = 5, vhat = (1,0)):
+    def __init__(self, position = (0,0), imageloc = 'pacman1.bmp', speed = 5, vhat = (0,-1)):
 	#Initialize the dood's parameers
         pygame.sprite.Sprite.__init__(self) #call sprite initializer
         self.image, self.rect = load_image(imageloc,-1) #sets its image to the called image
@@ -96,7 +96,7 @@ class dude(pygame.sprite.Sprite):
 
 class ghost(dude):
     #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = (0,0), imageloc = 'ghost1.bmp', speed=1, target = (0,0), vhat = (1,0), chase= False):
+    def __init__(self, position = (100,100), imageloc = 'ghost1.bmp', speed=0.5, target = (0,0), vhat = (1,0), chase= False):
 	#Initialize ghost parameters
         dude.__init__(self, position, imageloc, speed)
         self.target = target
@@ -109,13 +109,21 @@ class ghost(dude):
     def get_poss_moves(self):
         possmoves = []
         dir_order = ['up','left','down','right']
-
+        dir_order.remove(reverse_lookup(directions,self.vhat))
+        corner_rel_pos = ((7.9,-7.9),(-7.9,-7.9),(-7.9,7.9),(7.9,7.9))
+        validmove = True
         for direct in dir_order:
             temp_vhat = directions[direct]
+
             temp_new_pos = (self.nextpos[0] + temp_vhat[0]*self.speed, self.nextpos[1]+ temp_vhat[1]*self.speed)
-            temp_box_pos = pos_to_box(temp_new_pos)
-            #if levelmap[temp_box_pos[1]][temp_box_pos[0]]==1:
-            possmoves.append(temp_new_pos)
+            for corner_rel in corner_rel_pos:
+                corner_pos = (temp_new_pos[0] + corner_rel[0],temp_new_pos[1] + corner_rel[1])
+                corner_box = pos_to_box(corner_pos)
+                if not levelmap[corner_box[1]] [corner_box[0]]:
+                    validmove = False
+            if validmove:
+                possmoves.append(temp_new_pos)
+            validmove = True
             
         return possmoves
             
@@ -153,7 +161,7 @@ class ghost(dude):
         self.target = pacman_pos
 
 class player(dude):
-    def __init__(self, position = (200,200), imageloc = 'pacman1.bmp', speed = 5, vhat = (1,0)):
+    def __init__(self, position = (100,100), imageloc = 'pacman1.bmp', speed = 4, vhat = (1,0)):
         dude.__init__(self, position, imageloc, speed, vhat)
         self.original = self.image
 
@@ -201,7 +209,7 @@ class player(dude):
 
 class dot(pygame.sprite.Sprite):
     #A dot. They give you points
-    def __init__(self, pos = (100,100), imageloc = 'dot.bmp', value = 10):
+    def __init__(self, pos = (200,200), imageloc = 'dot.bmp', value = 10):
         pygame.sprite.Sprite.__init__(self) #call sprite initializer
         self.image, self.rect = load_image(imageloc,None) #sets its image to the called image
         self.value = value
@@ -243,20 +251,21 @@ class score(pygame.sprite.Sprite):
         self.message = "Score: %d" % self.val
         self.image = self.font.render(self.message, 0, (250,250,250))
 
-
+levelmap = mapgen()
 pygame.init()
 screen = pygame.display.set_mode((25*18,29*18))
 pygame.display.set_caption('PacMan')
 pygame.mouse.set_visible(0)
 
 background = pygame.Surface(screen.get_size())
+
 background = background.convert()
 background.fill((0,0,0))
 
 screen.blit(background, (0,0))
 pygame.display.flip()
 
-levelmap = mapgen()
+
 
 pacman = player()
 GHOST = ghost()
