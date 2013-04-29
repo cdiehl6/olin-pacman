@@ -131,7 +131,7 @@ class dude(pygame.sprite.Sprite):
 
 class ghost(dude):
     #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = (100,100), imageloc = 'ghost1.bmp', speed=0.5, target = (0,0), vhat = (1,0), chase= False):
+    def __init__(self, position = (100,100), imageloc = 'ghost1.bmp', speed=2, target = (0,0), vhat = (1,0), chase= False):
 	#Initialize ghost parameters
         dude.__init__(self, position, imageloc, speed)
         self.target = target
@@ -144,24 +144,15 @@ class ghost(dude):
     def get_poss_moves(self):
         possmoves = []
         dir_order = ['up','left','down','right']
-        dir_order.remove(reverse_lookup(directions,self.vhat))
-        corner_rel_pos = ((7.9,-7.9),(-7.9,-7.9),(-7.9,7.9),(7.9,7.9))
-        validmove = True
+        dir_order.remove(reverse_lookup(directions,(-1*self.vhat[0], -1*self.vhat[1])))
         for direct in dir_order:
             temp_vhat = directions[direct]
-
             temp_new_pos = (self.nextpos[0] + temp_vhat[0]*self.speed, self.nextpos[1]+ temp_vhat[1]*self.speed)
-            for corner_rel in corner_rel_pos:
-                corner_pos = (temp_new_pos[0] + corner_rel[0],temp_new_pos[1] + corner_rel[1])
-                corner_box = pos_to_box(corner_pos)
-                if not levelmap[corner_box[1]] [corner_box[0]]:
-                    validmove = False
-            if validmove:
-                possmoves.append(temp_new_pos)
-            validmove = True
-            
-        return possmoves
-            
+            temp_box_pos = pos_to_box(temp_new_pos)
+            ''' if levelmap[temp_box_pos[1]][temp_box_pos[0]]==1:
+                possmoves.append(temp_new_pos)'''
+            possmoves.append(temp_new_pos)
+        return possmoves            
             
     def new_next_pos(self):
 	#Get all possible moves 2 moves in the futre in the order up, left, down, right
@@ -176,22 +167,31 @@ class ghost(dude):
             if possdist[d] < possdist[leastdistindex]:
                 leastdistindex = d 
 	#Return the new next position
+        return possmoves[leastdistindex]	#Get all possible moves 2 moves in the futre in the order up, left, down, right
+        possmoves = self.get_poss_moves()
+	#Find the distance from each possible move to the target tile
+        possdist = []
+        for move in possmoves:
+            possdist.append(sqrt((self.target[0] - move[0])**2 + (self.target[1] - move[1])**2))
+	#Find the move that is closest (if two are the same, the order is: up, left, down right)
+        leastdistindex = 0
+        for d in range(len(possdist)):
+            if possdist[d] < possdist[leastdistindex]:
+                leastdistindex = d 
+	#Return the new next position
         return possmoves[leastdistindex]
 	
     def _move(self):
-        if self.rect.center == self.target:
-            movingx = 0
-            movingy = 0
-        else:
-            
-            movingx =  self.nextpos[0]-self.rect.center[0]
-            movingy =  self.nextpos[1]-self.rect.center[1]
         temp_next_move = self.new_next_pos()
+        movingx =  self.nextpos[0]-self.rect.center[0]
+        movingy =  self.nextpos[1]-self.rect.center[1]
         newpos = self.rect.move(movingx,movingy)
+        vhat = (movingx/self.speed, movingy/self.speed)
         self.rect = newpos
         self.box = pos_to_box(self.rect.center)
 	self.nextpos = temp_next_move
-
+        self.vhat = vhat
+    
     def update_target(self,pacman_pos):
         self.target = pacman_pos
 
