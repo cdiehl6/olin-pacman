@@ -289,6 +289,7 @@ class highscore(pygame.sprite.Sprite):
         else:
             return self.alltime
 
+pygame.init()
 levelmap = mapgen()
 screen = pygame.display.set_mode((25*18,29*18))
 pygame.display.set_caption('PacMan')
