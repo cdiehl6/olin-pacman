@@ -1,3 +1,4 @@
+
 [LEVEL]
 tileset=empty.png
 map=<----------><---------->
