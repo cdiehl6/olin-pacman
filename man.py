@@ -7,6 +7,41 @@ if not pygame.font:
 if not pygame.mixer:
     print 'Warning, sounds disabled'
 
+def game_boot():
+    line1 = loadscreen_text('Welcome to Olin-Pacman!', (100,100))
+    line2 = loadscreen_text('Press any key to begin a game', (50,200))
+    line3 = loadscreen_text('Press "Escape" to exit', (100,400), 20)
+    allsprites = pygame.sprite.RenderPlain(line1, line2, line3)
+    clock = pygame.time.Clock()
+    while 1:
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                raise SystemExit
+            elif event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    raise SystemExit
+                else:
+                    allsprites.empty()
+                    return
+        allsprites.update()
+        screen.blit(background, (0, 0))
+        allsprites.draw(screen)
+        pygame.display.flip()
+
+class loadscreen_text(pygame.sprite.Sprite):
+    def __init__(self, message = 'text', pos= (100,250), fontsize = 36):
+        pygame.sprite.Sprite.__init__(self)
+        self.font = pygame.font.Font(None, fontsize)
+        self.message = message
+        self.update()
+        self.rect = self.image.get_rect().move(pos)
+        self.rect.centerx = background.get_width()/2
+
+    def update(self):
+        self.image = self.font.render(self.message, 0, (250,250,250))
+
+
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
     try:
@@ -311,6 +346,7 @@ background.fill((0,0,0))
 screen.blit(background, (0,0))
 pygame.display.flip()
 
+game_boot()
 
 
 pacman = player()
@@ -321,7 +357,6 @@ HIGHSCORE = highscore()
 
 allsprites = pygame.sprite.RenderPlain(DOT, pacman, GHOST, SCORE, HIGHSCORE)
 clock = pygame.time.Clock()
-paused = False
 
 while 1:
     clock.tick(60)
