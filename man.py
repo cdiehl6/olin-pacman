@@ -61,7 +61,7 @@ def mapgen(maptextfile = 'map.txt'):
         read_data = f.readlines() 
     #get just the map from the read data
 
-    read_data = read_data[2:]
+    read_data = read_data[2:31]
     for index in range(len(read_data)):
         read_data[index] = read_data[index][4:]
         
@@ -131,7 +131,6 @@ class ghost(dude):
             if validmove:
                 possmoves.append(temp_new_pos)
             validmove = True
-        print(possmoves)
         return possmoves 
         
     def new_next_pos(self):
@@ -151,20 +150,65 @@ class ghost(dude):
 
     def _move(self):
         temp_next_move = self.new_next_pos()
-        print(temp_next_move)
         movingx =  self.nextpos[0]-self.rect.center[0]
         movingy =  self.nextpos[1]-self.rect.center[1]
+        if pos_to_box(temp_next_move) == pacman.box:
+            movingx = 0
+            movingy = 0
         vhat = (movingx/self.speed, movingy/self.speed)
-        print(reverse_lookup(directions,self.vhat))
         newpos = self.rect.move((movingx,movingy))
+ 
         self.rect = newpos
         self.box = pos_to_box(self.rect.center)
 	self.nextpos = temp_next_move
         self.vhat = vhat
-    
-    def update_target(self,pacman_pos):
-        self.target = pacman_pos
-        print(self.target)
+
+    def update_target(self,pac_pos):
+        self.target = (0,0)
+
+class Blinky(ghost):
+	#Blinky's target is pacman
+    def update_target(self,pac_pos):
+        self.target = pac_pos
+class Pinky(ghost):
+	#Pinky's target is 4 tiles offset in the direction pacman is moving, except when pacman is moving up. Then it is 4 tiles up and 4 to the left.
+
+#Right now, just adding tiles, not pixels BTW
+    def update_target(self,pac_pos,pac_vhat):
+        if pac_vhat == directions['left']:
+            self.target = [pac_pos[0] - 4*18, pac_pos[1]]
+        elif pac_vhat == directions['right']:
+            self.target = [pac_pos[0] + 4*18, pac_pos[0]]
+        elif pac_vhat == directions['down']:
+            self.target = [pac_pos[0], pac_pos[1] + 4*18]
+        elif pac_vhat == directions['up']:
+            self.target = [pac_pos[0]-4*18, pac_pos[1] - 4*18] 
+
+class Inky(ghost):
+#I don't even know how to describe this target tile. The dossier says this: "To determine Inky's target, we must first establish an intermediate offset two tiles in front of Pac-Man in the direction he is moving (represented by the tile bracketed in green above). Now imagine drawing a vector from the center of the red ghost's current tile to the center of the offset tile, then double the vector length by extending it out just as far again beyond the offset tile.
+    def update_target(self,pac_pos,pac_vhat,blinky_pos):
+        offsettile = [0,0]
+        if pac_vhat == directions['left']:
+            offsettile = [pac_pos[0] - 2*18, pac_pos[1]]
+        elif pac_vhat == directions['right']:
+            offsettile = [pac_pos[0] + 2, pac_pos[0]]
+        elif pac_vhat == directions['down']:
+            offsettile = [pac_pos[0], pac_pos[1] - 2*18]
+        elif pac_vhat == directions['up']:
+            offsettile = [pac_pos[0]-2*18, pac_pos[1] + 2*18]
+        self.target = [2*offsettile[0] - blinky_pos[0], 2*offsettile[1] - blinky_pos[1]]
+
+class Clyde(ghost):
+    #Clyde targets pacman when pacman is more than 8 squares away, and the bottom left corner when pacman is closer
+    def update_target(self,pac_pos):
+        #get the distance from Clyde to pacman
+        dist = sqrt((self.rect.center[0]-pac_pos[0])**2 + (self.rect.center[1]-pac_pos[1])**2)
+        #set the target
+        if dist >= 8*18:
+            self.target = pac_pos
+        else:
+            self.target = [0,29*18]
+            #This should be the bottom left corner of the maze (I don't know what that is yet]
 
 class player(dude):
     def __init__(self, position = (100,100), imageloc = 'pacman1.bmp', speed = 4, vhat = (1,0)):
@@ -211,7 +255,10 @@ class player(dude):
         newpos = self.rect.move((movingx,movingy))
         self.rect = newpos
         self.box = pos_to_box(self.rect.center)
-        self.isdead(GHOST)
+        self.isdead(BLINKY)
+        self.isdead(INKY)
+        self.isdead(PINKY)
+        self.isdead(CLYDE)
 
 class dot(pygame.sprite.Sprite):
     #A dot. They give you points
@@ -315,12 +362,15 @@ pygame.display.flip()
 
 
 pacman = player()
-GHOST = ghost()
+BLINKY = Blinky(imageloc = 'blinky.bmp')
+PINKY = Pinky(imageloc = 'pinky.bmp')
+INKY = Inky(imageloc = 'inky.bmp')
+CLYDE = Clyde(imageloc = 'clyde.bmp')
 DOT = dotgroup(levelmap)
 SCORE = score()
 HIGHSCORE = highscore()
 
-allsprites = pygame.sprite.RenderPlain(DOT, pacman, GHOST, SCORE, HIGHSCORE)
+allsprites = pygame.sprite.RenderPlain(DOT, pacman, BLINKY, PINKY, INKY, CLYDE, SCORE, HIGHSCORE)
 clock = pygame.time.Clock()
 paused = False
 
@@ -344,7 +394,10 @@ while 1:
                 paused = True
 
     allsprites.update()
-    GHOST.update_target(pacman.rect.center)
+    BLINKY.update_target(pacman.rect.center)
+    PINKY.update_target(pacman.rect.center, pacman.vhat)
+    INKY.update_target(pacman.rect.center,pacman.vhat,BLINKY.rect.center)
+    CLYDE.update_target(pacman.rect.center)
     screen.blit(background, (0, 0))
     allsprites.draw(screen)
     pygame.display.flip()
