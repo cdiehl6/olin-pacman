@@ -9,6 +9,18 @@ def box_to_pos(box = (0,0), boxsize=18):
     posy = int(box[1]*boxsize - floor(boxsize/2))
     return (posx, posy)
 
+def mapchars(maptextfile = 'map.txt'):
+     #Open the file and read the entire file
+    with open(maptextfile, 'r') as f:
+        read_data = f.readlines() 
+    #get just the map from the read data
+
+    read_data = read_data[2:31]
+    for index in range(len(read_data)):
+
+        read_data[index] = read_data[index][4:-1]
+
+    return read_data
 def mapgen(maptextfile = 'map.txt'):
     #Open the file and read the entire file
     with open(maptextfile, 'r') as f:

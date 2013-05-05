@@ -6,6 +6,9 @@ import pickle
 import dood
 import ghosts
 import mapfns
+import pygame.draw
+import tile_table
+
 
 
 if not pygame.font:
@@ -106,6 +109,7 @@ class player(dood.dude):
             print "I'm DEAD! I'm ALIVE BUT I'M DEAD!"
         
     def _move(self):
+
         movingx = self.vhat[0]*self.speed #sets how far it will move in the x direction
         movingy = self.vhat[1]*self.speed #sets how far it will move in the y direction
 
@@ -117,6 +121,13 @@ class player(dood.dude):
         elif self.rect.top < self.area.top and self.vhat==self.directions['up']: #top edge
             movingy = 0
         elif self.rect.bottom > self.area.bottom and self.vhat == self.directions['down']: #bottom edge
+            movingy = 0
+        centerpos = self.rect.center
+        temp_new_move = (centerpos[0] + movingx, centerpos[1] + movingy)
+        temp_new_box = mapfns.pos_to_box(temp_new_move)
+
+        if levelmap[temp_new_box[1]][temp_new_box[0]] == 0:
+            movingx = 0
             movingy = 0
 
         #move the dude!
@@ -230,6 +241,22 @@ pygame.display.flip()
 game_boot()
 
 
+
+tile_chars = {'<':(0,0), '-':(1,0), '>':(2,0), '|':(3,0), '#':(3,1), '=': (3,1), '\\': (0,1),'/':(2,1),'O':(3,1)}
+table =  tile_table.load_tile_table('pacmantiles.png',18,18)
+maparray = mapfns.mapchars()
+tiles = [[],[]]
+print(table)
+'''for x, row in enumerate(table):
+    for y, tile in enumerate(row):
+        screen.blit(tile, (x*18, y*18))'''
+for row in range(len(maparray)):
+    for col in range(len(maparray[0])):
+        tile_index = tile_chars[maparray[row][col]]
+        background.blit(table[tile_index[0]][tile_index[1]],(col*18,row*18))
+
+pygame.display.flip()
+
 pacman = player()
 BLINKY = ghosts.Blinky(imageloc = 'blinky.bmp')
 PINKY = ghosts.Pinky(imageloc = 'pinky.bmp')
@@ -238,6 +265,11 @@ CLYDE = ghosts.Clyde(imageloc = 'clyde.bmp')
 DOT = dotgroup(levelmap)
 SCORE = score()
 HIGHSCORE = highscore()
+
+
+
+
+
 
 allsprites = pygame.sprite.RenderPlain(DOT, pacman, BLINKY, PINKY, INKY, CLYDE, SCORE, HIGHSCORE)
 clock = pygame.time.Clock()
