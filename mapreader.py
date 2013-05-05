@@ -13,5 +13,5 @@ for r in range(len(read_data)):
     for c in range(len(read_data[r])):
         if read_data[r][c] == '#':
             is_move_poss[r][c] = 1
-    print(is_move_poss[r])
+
 

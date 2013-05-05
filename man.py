@@ -1,6 +1,12 @@
 import os, sys
 import pygame
 from pygame.locals import *
+from math import sqrt, floor
+import pickle
+import dood
+import ghosts
+import mapfns
+
 
 if not pygame.font:
     print 'Warning, fonts disabled'
@@ -70,189 +76,16 @@ def load_sound(name):
         raise(SystemExit, message)
     return sound
 
-from math import sqrt, floor
-import pickle
 
-#get the key in the dictionary from the value
-def reverse_lookup(d, v):
-    for k in d:
-        if d[k] == v:
-            return k
-    raise ValueError
 
-def pos_to_box(position = (0,0), boxsize=18):
-    boxx = int(floor(position[0]/boxsize))
-    boxy = int(floor(position[1]/boxsize))
-    return (boxx, boxy)
-
-def box_to_pos(box = (0,0), boxsize=18):
-    posx = int(box[0]*boxsize - floor(boxsize/2))
-    posy = int(box[1]*boxsize - floor(boxsize/2))
-    return (posx, posy)
-
-def mapgen(maptextfile = 'map.txt'):
-    #Open the file and read the entire file
-    with open(maptextfile, 'r') as f:
-        read_data = f.readlines() 
-    #get just the map from the read data
-
-    read_data = read_data[2:31]
-    for index in range(len(read_data)):
-        read_data[index] = read_data[index][4:]
-        
-    is_move_poss = [[0 for c in range(len(read_data[1]))] for r in range(len(read_data))]
-    for r in range(len(read_data)):
-        for c in range(len(read_data[r])):
-            if read_data[r][c] == '#':
-                is_move_poss[r][c] = 1
-            elif read_data[r][c] == 'O':
-                is_move_poss[r][c] = 2
-    return is_move_poss
-
-directions = {'up': (0,-1), 'left': (-1,0),'down': (0,1),'right': (1,0)} #a dictionary that converts from direction to a [x,y] vector or tuple
-
-#Defines our generic sprite
-class dude(pygame.sprite.Sprite):    
-    def __init__(self, position = (0,0), imageloc = 'pacman1.bmp', speed = 8, vhat = (0,-1)):
-	#Initialize the dood's parameers
-        pygame.sprite.Sprite.__init__(self) #call sprite initializer
-        self.image, self.rect = load_image(imageloc,-1) #sets its image to the called image
-
-        screen = pygame.display.get_surface()
-        self.area = screen.get_rect()
-        self.rect.center = position #sets the position, in pixels, of the center of the dood
-        self.box = pos_to_box(self.rect.center)
-
-        self.vhat = vhat #sets initial direction
-        self.speed = speed #sets speed in pixels (?) per cycle (?)
-
-    def update(self):
-        #move the dood
-        self._move()
-
-class ghost(dude):
-    #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = box_to_pos((2,5)), imageloc = 'ghost1.bmp', speed=2, target = (0,0), vhat = (0,1), chase= False):
-	#Initialize ghost parameters
-        dude.__init__(self, position, imageloc, speed)
-        self.target = target
-        self.chase = chase
-        self.vhat = vhat #sets initial direction
-        self.speed = speed #sets speed
-
-        self.nextpos = (self.rect.center[0] + self.vhat[0]*self.speed, self.rect.center[1] + self.vhat[1]*self.speed)
-        
-    def get_poss_moves(self):
-        possmoves = []
-        dir_order = ['up','left','down','right']
-        validmove = True
-        sideoffsets = ((0,-9),(-9,0),(0,7),(7,0))
-        for direct in dir_order:
-            temp_vhat = directions[direct]
-            temp_new_pos = (self.nextpos[0] + temp_vhat[0]*self.speed, self.nextpos[1]+ temp_vhat[1]*self.speed)
-            temp_box_pos = pos_to_box(temp_new_pos)
-            if temp_new_pos == self.rect.center:
-                validmove = False
-            if not(temp_new_pos[0]% 18 ==  9 or temp_new_pos[1] % 18 == 9):
-                validmove =False
-            if not(levelmap[temp_box_pos[1]][temp_box_pos[0]]):
-                validmove = False
-            for sideoff in sideoffsets:
-                side_pos = (temp_new_pos[0]+sideoff[0],temp_new_pos[1]+sideoff[1])
-                side_box = pos_to_box(side_pos)
-                if levelmap[side_box[1]][side_box[0]] == 0:
-                    validmove = False
-                
-            if validmove:
-                possmoves.append(temp_new_pos)
-            validmove = True
-        return possmoves 
-        
-    def new_next_pos(self):
-        d = 0
-	#Get all possible moves 2 moves in the futre in the order up, left, down, right
-        possmoves = self.get_poss_moves()
-        if possmoves == []:
-            return self.rect.center
-	#Find the distance from each possible move to the target tile
-        possdist = []
-        for move in possmoves:
-            possdist.append(sqrt((self.target[0] - move[0])**2 + (self.target[1] - move[1])**2))
-	#Find the move that is closest (if two are the same, the order is: up, left, down right)
-
-        leastdistindex = possdist.index(min(possdist))
-        return possmoves[leastdistindex]
-
-    def _move(self):
-        temp_next_move = self.new_next_pos()
-        movingx =  self.nextpos[0]-self.rect.center[0]
-        movingy =  self.nextpos[1]-self.rect.center[1]
-        if pos_to_box(temp_next_move) == pacman.box:
-            movingx = 0
-            movingy = 0
-        vhat = (movingx/self.speed, movingy/self.speed)
-        newpos = self.rect.move((movingx,movingy))
- 
-        self.rect = newpos
-        self.box = pos_to_box(self.rect.center)
-	self.nextpos = temp_next_move
-        self.vhat = vhat
-
-    def update_target(self,pac_pos):
-        self.target = (0,0)
-
-class Blinky(ghost):
-	#Blinky's target is pacman
-    def update_target(self,pac_pos):
-        self.target = pac_pos
-class Pinky(ghost):
-	#Pinky's target is 4 tiles offset in the direction pacman is moving, except when pacman is moving up. Then it is 4 tiles up and 4 to the left.
-
-#Right now, just adding tiles, not pixels BTW
-    def update_target(self,pac_pos,pac_vhat):
-        if pac_vhat == directions['left']:
-            self.target = [pac_pos[0] - 4*18, pac_pos[1]]
-        elif pac_vhat == directions['right']:
-            self.target = [pac_pos[0] + 4*18, pac_pos[0]]
-        elif pac_vhat == directions['down']:
-            self.target = [pac_pos[0], pac_pos[1] + 4*18]
-        elif pac_vhat == directions['up']:
-            self.target = [pac_pos[0]-4*18, pac_pos[1] - 4*18] 
-
-class Inky(ghost):
-#I don't even know how to describe this target tile. The dossier says this: "To determine Inky's target, we must first establish an intermediate offset two tiles in front of Pac-Man in the direction he is moving (represented by the tile bracketed in green above). Now imagine drawing a vector from the center of the red ghost's current tile to the center of the offset tile, then double the vector length by extending it out just as far again beyond the offset tile.
-    def update_target(self,pac_pos,pac_vhat,blinky_pos):
-        offsettile = [0,0]
-        if pac_vhat == directions['left']:
-            offsettile = [pac_pos[0] - 2*18, pac_pos[1]]
-        elif pac_vhat == directions['right']:
-            offsettile = [pac_pos[0] + 2, pac_pos[0]]
-        elif pac_vhat == directions['down']:
-            offsettile = [pac_pos[0], pac_pos[1] - 2*18]
-        elif pac_vhat == directions['up']:
-            offsettile = [pac_pos[0]-2*18, pac_pos[1] + 2*18]
-        self.target = [2*offsettile[0] - blinky_pos[0], 2*offsettile[1] - blinky_pos[1]]
-
-class Clyde(ghost):
-    #Clyde targets pacman when pacman is more than 8 squares away, and the bottom left corner when pacman is closer
-    def update_target(self,pac_pos):
-        #get the distance from Clyde to pacman
-        dist = sqrt((self.rect.center[0]-pac_pos[0])**2 + (self.rect.center[1]-pac_pos[1])**2)
-        #set the target
-        if dist >= 8*18:
-            self.target = pac_pos
-        else:
-            self.target = [0,29*18]
-            #This should be the bottom left corner of the maze (I don't know what that is yet]
-
-class player(dude):
+class player(dood.dude):
     def __init__(self, position = (100,100), imageloc = 'pacman1.bmp', speed = 4, vhat = (1,0)):
-        dude.__init__(self, position, imageloc, speed, vhat)
+        dood.dude.__init__(self, position, imageloc, speed, vhat)
         self.original = self.image
 
     def _turn(self, direct):
         #takes a string as an input of 'up' 'down' 'left' or 'right' and turns pacman and makes him go in the way you want him to go
-        newv=directions[direct] #looks up in the directions dictionary
+        newv=self.directions[direct] #looks up in the directions dictionary
 
         if self.vhat == newv: #does nothing when you try to turn in the direction that you're already turning.
             return
@@ -277,19 +110,19 @@ class player(dude):
         movingy = self.vhat[1]*self.speed #sets how far it will move in the y direction
 
         #the following if/elif block makes the dood stop if it hits the side of the window.
-        if self.rect.left<self.area.left and self.vhat==directions['left']: #left edge
+        if self.rect.left<self.area.left and self.vhat==self.directions['left']: #left edge
             movingx = 0
-        elif self.rect.right>self.area.right and self.vhat == directions['right']: #right edge
+        elif self.rect.right>self.area.right and self.vhat == self.directions['right']: #right edge
             movingx = 0
-        elif self.rect.top < self.area.top and self.vhat==directions['up']: #top edge
+        elif self.rect.top < self.area.top and self.vhat==self.directions['up']: #top edge
             movingy = 0
-        elif self.rect.bottom > self.area.bottom and self.vhat == directions['down']: #bottom edge
+        elif self.rect.bottom > self.area.bottom and self.vhat == self.directions['down']: #bottom edge
             movingy = 0
 
         #move the dude!
         newpos = self.rect.move((movingx,movingy))
         self.rect = newpos
-        self.box = pos_to_box(self.rect.center)
+        self.box = mapfns.pos_to_box(self.rect.center)
         self.isdead(BLINKY)
         self.isdead(INKY)
         self.isdead(PINKY)
@@ -302,7 +135,7 @@ class dot(pygame.sprite.Sprite):
         self.image, self.rect = load_image(imageloc,None) #sets its image to the called image
         self.value = value
         self.rect.center = pos
-        self.box = pos_to_box(pos)
+        self.box = mapfns.pos_to_box(pos)
         self.dead = 0
 
     def _eaten(self, other):
@@ -320,7 +153,7 @@ class dotgroup(pygame.sprite.Group):
         pygame.sprite.Group.__init__(self)
         for i in range(len(maplist)):
             for j in range(len(maplist[i])):
-                newpos = box_to_pos((j+1,i+1))
+                newpos = mapfns.box_to_pos((j+1,i+1))
                 if maplist[i][j] == 1:
                     newdot = dot(newpos)
                     self.add(newdot)
@@ -381,7 +214,7 @@ class highscore(pygame.sprite.Sprite):
         self.image = self.font.render(self.message, 0, (250,250,250))
 
 pygame.init()
-levelmap = mapgen()
+levelmap = mapfns.mapgen()
 screen = pygame.display.set_mode((25*18,29*18))
 pygame.display.set_caption('PacMan')
 pygame.mouse.set_visible(0)
@@ -398,10 +231,10 @@ game_boot()
 
 
 pacman = player()
-BLINKY = Blinky(imageloc = 'blinky.bmp')
-PINKY = Pinky(imageloc = 'pinky.bmp')
-INKY = Inky(imageloc = 'inky.bmp')
-CLYDE = Clyde(imageloc = 'clyde.bmp')
+BLINKY = ghosts.Blinky(imageloc = 'blinky.bmp')
+PINKY = ghosts.Pinky(imageloc = 'pinky.bmp')
+INKY = ghosts.Inky(imageloc = 'inky.bmp')
+CLYDE = ghosts.Clyde(imageloc = 'clyde.bmp')
 DOT = dotgroup(levelmap)
 SCORE = score()
 HIGHSCORE = highscore()
