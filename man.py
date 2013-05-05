@@ -274,30 +274,32 @@ HIGHSCORE = highscore()
 allsprites = pygame.sprite.RenderPlain(DOT, pacman, BLINKY, PINKY, INKY, CLYDE, SCORE, HIGHSCORE)
 clock = pygame.time.Clock()
 
-while 1:
-    clock.tick(60)
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            raise SystemExit
-        elif event.type == KEYDOWN:
-            if event.key == K_LEFT:
-                pacman._turn('left')
-            elif event.key == K_RIGHT:
-                pacman._turn('right')
-            elif event.key == K_UP:
-                pacman._turn('up')
-            elif event.key == K_DOWN:
-                pacman._turn('down')
-            elif event.key == K_ESCAPE:
+def playgame(levelnumber=0):
+    while 1:
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == QUIT:
                 raise SystemExit
-            elif event.key == K_SPACE:
-                paused = True
+            elif event.type == KEYDOWN:
+                if event.key == K_LEFT:
+                    pacman._turn('left')
+                elif event.key == K_RIGHT:
+                    pacman._turn('right')
+                elif event.key == K_UP:
+                    pacman._turn('up')
+                elif event.key == K_DOWN:
+                    pacman._turn('down')
+                elif event.key == K_ESCAPE:
+                    raise SystemExit
+                elif event.key == K_SPACE:
+                    paused = True
+        allsprites.update()
+        BLINKY.update_target(pacman.rect.center)
+        PINKY.update_target(pacman.rect.center, pacman.vhat)
+        INKY.update_target(pacman.rect.center,pacman.vhat,BLINKY.rect.center)
+        CLYDE.update_target(pacman.rect.center)
+        screen.blit(background, (0, 0))
+        allsprites.draw(screen)
+        pygame.display.flip()
 
-    allsprites.update()
-    BLINKY.update_target(pacman.rect.center)
-    PINKY.update_target(pacman.rect.center, pacman.vhat)
-    INKY.update_target(pacman.rect.center,pacman.vhat,BLINKY.rect.center)
-    CLYDE.update_target(pacman.rect.center)
-    screen.blit(background, (0, 0))
-    allsprites.draw(screen)
-    pygame.display.flip()
+playgame()
