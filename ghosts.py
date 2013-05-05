@@ -8,7 +8,7 @@ import mapfns
 
 class ghost(dood.dude):
     #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = mapfns.box_to_pos((2,5)), imageloc = 'ghost1.bmp', speed=2, target = (0,0), vhat = (0,1), chase= False):
+    def __init__(self, position = mapfns.box_to_pos((2,5)), imageloc = 'ghost1.bmp', speed=3, target = (0,0), vhat = (0,1), chase= False):
 	#Initialize ghost parameters
         dood.dude.__init__(self, position, imageloc, speed)
         self.target = target
