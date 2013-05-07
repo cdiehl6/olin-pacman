@@ -12,7 +12,6 @@ class ghost(dood.dude):
 	#Initialize ghost parameters
         dood.dude.__init__(self, position, imageloc, speed)
         self.target = target
-        self.chase = chase
         self.vhat = vhat #sets initial direction
         self.speed = speed #sets speed
         self.startpos = position
@@ -88,46 +87,56 @@ class ghost(dood.dude):
         
 class Blinky(ghost):
 	#Blinky's target is pacman
-    def update_target(self,pac_pos):
-        self.target = pac_pos
+    def update_target(self,pac_pos,chase):
+        if chase:
+            self.target = self.startpos
+        else:
+            self.target = pac_pos
 class Pinky(ghost):
 	#Pinky's target is 4 tiles offset in the direction pacman is moving, except when pacman is moving up. Then it is 4 tiles up and 4 to the left.
 
 #Right now, just adding tiles, not pixels BTW
-    def update_target(self,pac_pos,pac_vhat):
-        if pac_vhat == self.directions['left']:
-            self.target = [pac_pos[0] - 4*18, pac_pos[1]]
-        elif pac_vhat == self.directions['right']:
-            self.target = [pac_pos[0] + 4*18, pac_pos[0]]
-        elif pac_vhat == self.directions['down']:
-            self.target = [pac_pos[0], pac_pos[1] + 4*18]
-        elif pac_vhat == self.directions['up']:
-            self.target = [pac_pos[0]-4*18, pac_pos[1] - 4*18] 
+    def update_target(self,pac_pos,pac_vhat,chase):
+        if chase:
+            self.target = self.startpos
+        else:
+            if pac_vhat == self.directions['left']:
+                self.target = [pac_pos[0] - 4*18, pac_pos[1]]
+            elif pac_vhat == self.directions['right']:
+                self.target = [pac_pos[0] + 4*18, pac_pos[0]]
+            elif pac_vhat == self.directions['down']:
+                self.target = [pac_pos[0], pac_pos[1] + 4*18]
+            elif pac_vhat == self.directions['up']:
+                self.target = [pac_pos[0]-4*18, pac_pos[1] - 4*18] 
 
 class Inky(ghost):
 #I don't even know how to describe this target tile. The dossier says this: "To determine Inky's target, we must first establish an intermediate offset two tiles in front of Pac-Man in the direction he is moving (represented by the tile bracketed in green above). Now imagine drawing a vector from the center of the red ghost's current tile to the center of the offset tile, then double the vector length by extending it out just as far again beyond the offset tile.
-    def update_target(self,pac_pos,pac_vhat,blinky_pos):
-        offsettile = [0,0]
-        if pac_vhat == self.directions['left']:
-            offsettile = [pac_pos[0] - 2*18, pac_pos[1]]
-        elif pac_vhat == self.directions['right']:
-            offsettile = [pac_pos[0] + 2, pac_pos[0]]
-        elif pac_vhat == self.directions['down']:
-            offsettile = [pac_pos[0], pac_pos[1] - 2*18]
-        elif pac_vhat == self.directions['up']:
-            offsettile = [pac_pos[0]-2*18, pac_pos[1] + 2*18]
-        self.target = [2*offsettile[0] - blinky_pos[0], 2*offsettile[1] - blinky_pos[1]]
+    def update_target(self,pac_pos,pac_vhat,blinky_pos,chase):
+        if chase:
+            self.target = self.startpos
+        else:
+            if pac_vhat == self.directions['left']:
+                self.target = [pac_pos[0] - 4*18, pac_pos[1]]
+            elif pac_vhat == self.directions['right']:
+                self.target = [pac_pos[0] + 4*18, pac_pos[0]]
+            elif pac_vhat == self.directions['down']:
+                self.target = [pac_pos[0], pac_pos[1] + 4*18]
+            elif pac_vhat == self.directions['up']:
+                self.target = [pac_pos[0]-4*18, pac_pos[1] - 4*18] 
 
 class Clyde(ghost):
     #Clyde targets pacman when pacman is more than 8 squares away, and the bottom left corner when pacman is closer
-    def update_target(self,pac_pos):
-        #get the distance from Clyde to pacman
-        dist = sqrt((self.rect.center[0]-pac_pos[0])**2 + (self.rect.center[1]-pac_pos[1])**2)
-        #set the target
-        if dist >= 8*18:
-            self.target = pac_pos
+    def update_target(self,pac_pos,chase):
+        if chase:
+            self.target = self.startpos
         else:
-            self.target = [0,29*18]
+            #get the distance from Clyde to pacman
+            dist = sqrt((self.rect.center[0]-pac_pos[0])**2 + (self.rect.center[1]-pac_pos[1])**2)
+            #set the target
+            if dist >= 8*18:
+                self.target = pac_pos
+            else:
+                self.target = [0,29*18]
             #This should be the bottom left corner of the maze (I don't know what that is yet]
 
 levelmap = mapfns.mapgen()

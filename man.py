@@ -170,6 +170,8 @@ class dot(pygame.sprite.Sprite):
     def _eaten(self, other):
         if self.box == other.box:
             SCORE.val += self.value
+            if self.value == 50:
+                print('chase engaged')
             self.kill()
 
 
@@ -274,6 +276,8 @@ for row in range(len(maparray)):
 
 pygame.display.flip()
 
+
+
 pacman = player()
 BLINKY = ghosts.Blinky(imageloc = 'blinky.bmp')
 PINKY = ghosts.Pinky(imageloc = 'pinky.bmp')
@@ -284,7 +288,9 @@ SCORE = score()
 HIGHSCORE = highscore()
 
 
-
+chase = False
+chaseduration = 30
+chasetime = 0
 
 
 
@@ -292,6 +298,7 @@ allsprites = pygame.sprite.RenderPlain(DOT, pacman, BLINKY, PINKY, INKY, CLYDE, 
 clock = pygame.time.Clock()
 
 def playgame(levelnumber=0):
+
     while 1:
         clock.tick(60)
         for event in pygame.event.get():
@@ -311,12 +318,13 @@ def playgame(levelnumber=0):
                 elif event.key == K_SPACE:
                     paused = True
         allsprites.update()
-        BLINKY.update_target(pacman.rect.center)
-        PINKY.update_target(pacman.rect.center, pacman.vhat)
-        INKY.update_target(pacman.rect.center,pacman.vhat,BLINKY.rect.center)
-        CLYDE.update_target(pacman.rect.center)
+        BLINKY.update_target(pacman.rect.center,chase)
+        PINKY.update_target(pacman.rect.center, pacman.vhat,chase)
+        INKY.update_target(pacman.rect.center,pacman.vhat,BLINKY.rect.center,chase)
+        CLYDE.update_target(pacman.rect.center,chase)
         screen.blit(background, (0, 0))
         allsprites.draw(screen)
         pygame.display.flip()
+        print(chase)
 
 playgame()
