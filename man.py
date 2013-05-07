@@ -264,7 +264,6 @@ tile_chars = {'<':(0,0), '-':(1,0), '>':(2,0), '|':(3,0), '#':(3,1), '=': (3,1),
 table =  tile_table.load_tile_table('pacmantiles.png',18,18)
 maparray = mapfns.mapchars()
 tiles = [[],[]]
-print(table)
 '''for x, row in enumerate(table):
     for y, tile in enumerate(row):
         screen.blit(tile, (x*18, y*18))'''

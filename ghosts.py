@@ -85,9 +85,6 @@ class ghost(dood.dude):
         self.box = mapfns.pos_to_box(self.rect.center)
         self.vhat = (0,1)
         self.nextpos = (self.rect.center[0] + self.vhat[0]*self.speed, self.rect.center[1] + self.vhat[1]*self.speed)
-        print(self.rect.center)
-        print(self.nextpos)
-        print(mapfns.pos_to_box(self.nextpos))
         
 class Blinky(ghost):
 	#Blinky's target is pacman
