@@ -82,9 +82,10 @@ def load_sound(name):
 
 
 class player(dood.dude):
-    def __init__(self, position = (100,100), imageloc = 'pacman.bmp', speed = 4, vhat = (1,0)):
+    def __init__(self, position = (100,100), imageloc = 'pacman.bmp', speed = 4, vhat = (1,0), lives =3):
         dood.dude.__init__(self, position, imageloc, speed, vhat)
         self.original = self.image
+        self.lives = lives
 
     def _turn(self, direct):
         #takes a string as an input of 'up' 'down' 'left' or 'right' and turns pacman and makes him go in the way you want him to go
@@ -105,8 +106,22 @@ class player(dood.dude):
 
     def isdead(self, other):
         if self.box == other.box:
-            self.kill()
-            print "I'm DEAD! I'm ALIVE BUT I'M DEAD!"
+            self.lives -= 1
+            if self.lives:
+                current_pos = self.rect.center
+                movingx = 100 - current_pos[0]
+                movingy = 100 - current_pos[1]
+                newpos = self.rect.move((movingx,movingy))
+                self.rect = newpos
+                self.box = mapfns.pos_to_box(self.rect.center)
+                BLINKY.reset_to_home()
+                PINKY.reset_to_home()
+                INKY.reset_to_home()
+                CLYDE.reset_to_home()
+                print("I'm DEAD! I'm ALIVE BUT I'M DEAD!")
+            else:
+                self.kill()
+                print('Welp, ya done died')
         
     def _move(self):
 

@@ -8,14 +8,14 @@ import mapfns
 
 class ghost(dood.dude):
     #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = mapfns.box_to_pos((2,5)), imageloc = 'ghost1.bmp', speed=2, target = (0,0), vhat = (0,1), chase= False):
+    def __init__(self, position = mapfns.box_to_pos((12,14)), imageloc = 'ghost1.bmp', speed=2, target = (0,0), vhat = (0,1), chase= False,):
 	#Initialize ghost parameters
         dood.dude.__init__(self, position, imageloc, speed)
         self.target = target
         self.chase = chase
         self.vhat = vhat #sets initial direction
         self.speed = speed #sets speed
-
+        self.startpos = position
         self.nextpos = (self.rect.center[0] + self.vhat[0]*self.speed, self.rect.center[1] + self.vhat[1]*self.speed)
         
     def get_poss_moves(self):
@@ -77,7 +77,18 @@ class ghost(dood.dude):
 
     def update_target(self,pac_pos):
         self.target = (0,0)
-
+    def reset_to_home(self):
+        movingx =  self.startpos[0]-self.rect.center[0]
+        movingy =  self.startpos[1]-self.rect.center[1]
+        newpos = self.rect.move((movingx,movingy))
+        self.rect = newpos
+        self.box = mapfns.pos_to_box(self.rect.center)
+        self.vhat = (0,1)
+        self.nextpos = (self.rect.center[0] + self.vhat[0]*self.speed, self.rect.center[1] + self.vhat[1]*self.speed)
+        print(self.rect.center)
+        print(self.nextpos)
+        print(mapfns.pos_to_box(self.nextpos))
+        
 class Blinky(ghost):
 	#Blinky's target is pacman
     def update_target(self,pac_pos):
