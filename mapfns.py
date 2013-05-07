@@ -29,7 +29,7 @@ def mapgen(maptextfile = 'map.txt'):
 
     read_data = read_data[2:31]
     for index in range(len(read_data)):
-        read_data[index] = read_data[index][4:]
+        read_data[index] = read_data[index][4:-1]
         
     is_move_poss = [[0 for c in range(len(read_data[1]))] for r in range(len(read_data))]
     for r in range(len(read_data)):
@@ -39,3 +39,5 @@ def mapgen(maptextfile = 'map.txt'):
             elif read_data[r][c] == 'O':
                 is_move_poss[r][c] = 2
     return is_move_poss
+
+

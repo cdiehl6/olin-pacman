@@ -8,7 +8,7 @@ import mapfns
 
 class ghost(dood.dude):
     #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = mapfns.box_to_pos((2,5)), imageloc = 'ghost1.bmp', speed=3, target = (0,0), vhat = (0,1), chase= False):
+    def __init__(self, position = mapfns.box_to_pos((2,5)), imageloc = 'ghost1.bmp', speed=2, target = (0,0), vhat = (0,1), chase= False):
 	#Initialize ghost parameters
         dood.dude.__init__(self, position, imageloc, speed)
         self.target = target
@@ -23,6 +23,7 @@ class ghost(dood.dude):
         dir_order = ['up','left','down','right']
         validmove = True
         sideoffsets = ((0,-9),(-9,0),(0,7),(7,0))
+        tunnel_boxes = ((13,0),(13,1),(13,2),(13,3),(13,4),(13,19),(13,20),(13,21),(13,22),(13,23))
         for direct in dir_order:
             temp_vhat = self.directions[direct]
             temp_new_pos = (self.nextpos[0] + temp_vhat[0]*self.speed, self.nextpos[1]+ temp_vhat[1]*self.speed)
@@ -38,6 +39,9 @@ class ghost(dood.dude):
                 side_box = mapfns.pos_to_box(side_pos)
                 if levelmap[side_box[1]][side_box[0]] == 0:
                     validmove = False
+                for ill_box in tunnel_boxes:
+                    if (side_box[1],side_box[0]) == ill_box:
+                        validmove = False
                 
             if validmove:
                 possmoves.append(temp_new_pos)

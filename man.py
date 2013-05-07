@@ -82,7 +82,7 @@ def load_sound(name):
 
 
 class player(dood.dude):
-    def __init__(self, position = (100,100), imageloc = 'pacman1.bmp', speed = 4, vhat = (1,0)):
+    def __init__(self, position = (100,100), imageloc = 'pacman.bmp', speed = 4, vhat = (1,0)):
         dood.dude.__init__(self, position, imageloc, speed, vhat)
         self.original = self.image
 
@@ -114,21 +114,24 @@ class player(dood.dude):
         movingy = self.vhat[1]*self.speed #sets how far it will move in the y direction
 
         #the following if/elif block makes the dood stop if it hits the side of the window.
-        if self.rect.left<self.area.left and self.vhat==self.directions['left']: #left edge
-            movingx = 0
-        elif self.rect.right>self.area.right and self.vhat == self.directions['right']: #right edge
-            movingx = 0
-        elif self.rect.top < self.area.top and self.vhat==self.directions['up']: #top edge
-            movingy = 0
-        elif self.rect.bottom > self.area.bottom and self.vhat == self.directions['down']: #bottom edge
-            movingy = 0
-        centerpos = self.rect.center
-        temp_new_move = (centerpos[0] + movingx, centerpos[1] + movingy)
-        temp_new_box = mapfns.pos_to_box(temp_new_move)
-
-        if levelmap[temp_new_box[1]][temp_new_box[0]] == 0:
-            movingx = 0
-            movingy = 0
+        if self.rect.left <= self.area.left and self.vhat==self.directions['left']: #left edge
+            movingx = self.area.right - self.area.left
+        elif self.rect.right >= self.area.right and self.vhat == self.directions['right']: #right edge
+            movingx = self.area.left - self.area.right
+        elif self.rect.top <= self.area.top and self.vhat==self.directions['up']: #top edge
+            movingy = self.area.bottom - self.area.top
+        elif self.rect.bottom >= self.area.bottom and self.vhat == self.directions['down']: #bottom edge
+            movingy = self.area.top - self.area.bottom
+        else:
+            try:
+                centerpos = self.rect.center
+                temp_new_move = (centerpos[0] + movingx, centerpos[1] + movingy)
+                temp_new_box = mapfns.pos_to_box(temp_new_move)
+                if levelmap[temp_new_box[1]][temp_new_box[0]] == 0:
+                    movingx = 0
+                    movingy = 0
+            except:
+                print('off screen')
 
         #move the dude!
         newpos = self.rect.move((movingx,movingy))
@@ -226,7 +229,7 @@ class highscore(pygame.sprite.Sprite):
 
 pygame.init()
 levelmap = mapfns.mapgen()
-screen = pygame.display.set_mode((25*18,29*18))
+screen = pygame.display.set_mode((24*18,29*18))
 pygame.display.set_caption('PacMan')
 pygame.mouse.set_visible(0)
 
