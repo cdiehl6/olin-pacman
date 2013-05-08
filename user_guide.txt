@@ -1,0 +1,2 @@
+To use this project, and to enjoy a wonderful game of pacman:
+in the terminal 
