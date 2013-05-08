@@ -84,7 +84,7 @@ def load_sound(name):
 
 
 class player(dood.dude):
-    def __init__(self, position = (100,100), imageloc = 'pacman.bmp', speed = 4, vhat = (1,0), lives =3):
+    def __init__(self, position = (90,100), imageloc = 'pacman.bmp', speed = 4, vhat = (1,0), lives =3):
         dood.dude.__init__(self, position, imageloc, speed, vhat)
         self.original = self.image
         self.lives = lives
