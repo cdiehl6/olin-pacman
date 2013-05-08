@@ -45,15 +45,17 @@ class Level(object):
         self.height=29
 
    def tile(self,x,y):
-        try:
-            char=self.map[y][x]
-            print ('hi')
-        except IndexError:
-            return {}
-        try:
-            return self.key[char]
-        except KeyError:
-            return {}
+       char=self.map[y][x]
+       ret
+#        try:
+#            char=self.map[y][x]
+#            print ('hi')
+#        except IndexError:
+#            return {}
+#        try:
+#            return self.key[char]
+#        except KeyError:
+#            return {}
 
    def render(self):
         wall =self.tile
