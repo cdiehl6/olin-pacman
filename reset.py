@@ -4,6 +4,6 @@ highscore =[]
 for i in range(10):
     highscore.append(tuple)
 
-with open('data/highscore.txt', 'r+') as f:
+with open('data/highscore.txt', 'w') as f:
     pickle.dump(highscore,f)
-    print('yeah')
+    print("You've successfully reset the highscore file.")
