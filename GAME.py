@@ -39,6 +39,107 @@ def game_boot():
         allsprites.draw(screen)
         pygame.display.flip()
 
+def background_gen():
+    """make the background image from the map"""
+    tile_chars = {'<':(0,0), '-':(1,0), '>':(2,0), '|':(3,0), '#':(3,1), '=': (3,1), '\\': (0,1),'/':(2,1),'O':(3,1)}
+    table =  tile_table.load_tile_table('pacmantiles.png',18,18)
+    maparray = mapfns.mapchars()
+    tiles = [[],[]]
+    for row in range(len(maparray)):
+        for col in range(len(maparray[0])):
+            tile_index = tile_chars[maparray[row][col]]
+            background.blit(table[tile_index[0]][tile_index[1]],(col*18,row*18))
+
+def newplayers(yourscore,yourlives):
+    """creates players and puts them in allsprites"""
+    global pacman
+    global BLINKY
+    global PINKY
+    global INKY
+    global CLYDE
+    global DOT
+    global SCORE
+    global HIGHSCORE
+    global LIVES
+    global MESSAGE
+    global GHOSTS
+    global allsprites
+    pacman = player(lives=yourlives)
+    BLINKY = ghosts.Blinky(imageloc = 'blinky.bmp', name = 'blinky',position =  mapfns.box_to_pos((11,14)))
+    PINKY = ghosts.Pinky(imageloc = 'pinky.bmp', name = 'pinky',position =  mapfns.box_to_pos((12,14)))
+    INKY = ghosts.Inky(imageloc = 'inky.bmp', name = 'inky', position =  mapfns.box_to_pos((13,14)))
+    CLYDE = ghosts.Clyde(imageloc = 'clyde.bmp', name = 'clyde', position =  mapfns.box_to_pos((14,14)))
+    DOT = dotgroup(levelmap)
+
+    SCORE = score(val = yourscore)
+    HIGHSCORE = highscore()
+    LIVES = lives()
+    MESSAGE = message()
+
+    GHOSTS = pygame.sprite.Group(BLINKY, PINKY, INKY, CLYDE)
+    allsprites = pygame.sprite.RenderPlain(pacman, GHOSTS, DOT, SCORE, HIGHSCORE, LIVES, MESSAGE)
+
+def playgame(levelnumber=0, yourscore=0, yourlives=3):
+    """Starts a new game at level x"""
+    global levelmap
+    levelmap = mapfns.mapgen()
+    background_gen()
+    global chase
+    chase = False
+    global ghostseaten
+    ghostseaten = 0
+    global chasetime
+    chasetime = 0
+    chaseduration = 500
+    newplayers(yourscore,yourlives)
+    MESSAGE.val = "Level %d" % int(levelnumber+1)
+    while 1:
+        clock.tick(60)
+        if chase:
+            if chasetime == 0:
+                for i in range(len(GHOSTS.sprites())):
+                    GHOSTS.sprites()[i].image, GHOSTS.sprites()[i].rect = dood.load_image('chase.bmp',-1)
+                    GHOSTS.sprites()[i].chase = True
+            chasetime += 1
+            if chasetime == chaseduration:
+                chase = False
+                for i in range(len(GHOSTS.sprites())):
+                    GHOSTS.sprites()[i].chase = False
+                BLINKY.image, BLINKY.rect = dood.load_image('blinky.bmp',-1)
+                PINKY.image, PINKY.rect = dood.load_image('pinky.bmp',-1)
+                INKY.image, INKY.rect = dood.load_image('inky.bmp',-1)
+                CLYDE.image, CLYDE.rect = dood.load_image('clyde.bmp',-1)
+                ghostseaten = 0
+                chasetime = 0
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                raise SystemExit
+            elif event.type == KEYDOWN:
+                if event.key == K_LEFT:
+                    pacman._turn('left')
+                elif event.key == K_RIGHT:
+                    pacman._turn('right')
+                elif event.key == K_UP:
+                    pacman._turn('up')
+                elif event.key == K_DOWN:
+                    pacman._turn('down')
+                elif event.key == K_ESCAPE:
+                    raise SystemExit
+                elif event.key == K_SPACE:
+                    paused = True
+        allsprites.update()
+        BLINKY.update_target(pacman.rect.center,chase)
+        PINKY.update_target(pacman.rect.center, pacman.vhat,chase)
+        INKY.update_target(pacman.rect.center,pacman.vhat,BLINKY.rect.center,chase)
+        CLYDE.update_target(pacman.rect.center,chase)
+        screen.blit(background, (0, 0))
+        allsprites.draw(screen)
+        pygame.display.flip()
+        if len(DOT.sprites()) == 0:
+            #if the level ends, start the next one.
+            levelnumber += 1
+            playgame(levelnumber = levelnumber, yourscore = SCORE.val, yourlives = pacman.lives)
+
 class loadscreen_text(pygame.sprite.Sprite):
     """A sprite that displays text for the loadscreen, centered on the x axis. The x position that is set in the initialization doesn't matter."""
     def __init__(self, message = 'text', pos= (100,250), fontsize = 36):
@@ -80,7 +181,6 @@ def load_sound(name):
         print('Cannot load sound:', name)
         raise(SystemExit, message)
     return sound
-
 
 
 class player(dood.dude):
@@ -295,10 +395,10 @@ class message(pygame.sprite.Sprite):
         self.message = self.val
         self.image = self.font.render(self.message, 0, (250,250,250))
 
+
 #Begin the game environment!
 
 pygame.init()
-levelmap = mapfns.mapgen()
 screen = pygame.display.set_mode((24*18,(29+5)*18))
 pygame.display.set_caption('PacMan')
 pygame.mouse.set_visible(0)
@@ -310,107 +410,6 @@ screen.blit(background, (0,0))
 pygame.display.flip()
 
 game_boot()
-
-def background_gen():
-    """make the background image from the map"""
-    tile_chars = {'<':(0,0), '-':(1,0), '>':(2,0), '|':(3,0), '#':(3,1), '=': (3,1), '\\': (0,1),'/':(2,1),'O':(3,1)}
-    table =  tile_table.load_tile_table('pacmantiles.png',18,18)
-    maparray = mapfns.mapchars()
-    tiles = [[],[]]
-    for row in range(len(maparray)):
-        for col in range(len(maparray[0])):
-            tile_index = tile_chars[maparray[row][col]]
-            background.blit(table[tile_index[0]][tile_index[1]],(col*18,row*18))
-
 pygame.display.flip()
-
 clock = pygame.time.Clock()
-
-def newplayers(yourscore,yourlives):
-    """creates players and puts them in allsprites"""
-    global pacman
-    global BLINKY
-    global PINKY
-    global INKY
-    global CLYDE
-    global DOT
-    global SCORE
-    global HIGHSCORE
-    global LIVES
-    global MESSAGE
-    global GHOSTS
-    global allsprites
-    pacman = player(lives=yourlives)
-    BLINKY = ghosts.Blinky(imageloc = 'blinky.bmp', name = 'blinky',position =  mapfns.box_to_pos((11,14)))
-    PINKY = ghosts.Pinky(imageloc = 'pinky.bmp', name = 'pinky',position =  mapfns.box_to_pos((12,14)))
-    INKY = ghosts.Inky(imageloc = 'inky.bmp', name = 'inky', position =  mapfns.box_to_pos((13,14)))
-    CLYDE = ghosts.Clyde(imageloc = 'clyde.bmp', name = 'clyde', position =  mapfns.box_to_pos((14,14)))
-    DOT = dotgroup(levelmap)
-
-    SCORE = score(val = yourscore)
-    HIGHSCORE = highscore()
-    LIVES = lives()
-    MESSAGE = message()
-
-    GHOSTS = pygame.sprite.Group(BLINKY, PINKY, INKY, CLYDE)
-    allsprites = pygame.sprite.RenderPlain(pacman, GHOSTS, DOT, SCORE, HIGHSCORE, LIVES, MESSAGE)
-
-def playgame(levelnumber=0, yourscore=0, yourlives=3):
-    """Starts a new game at level x"""
-    background_gen()
-    global chase
-    chase = False
-    global ghostseaten
-    ghostseaten = 0
-    global chasetime
-    chasetime = 0
-    chaseduration = 500
-    newplayers(yourscore,yourlives)
-    MESSAGE.val = "Level %d" % int(levelnumber+1)
-    while 1:
-        clock.tick(60)
-        if chase:
-            if chasetime == 0:
-                for i in range(len(GHOSTS.sprites())):
-                    GHOSTS.sprites()[i].image, GHOSTS.sprites()[i].rect = dood.load_image('chase.bmp',-1)
-                    GHOSTS.sprites()[i].chase = True
-            chasetime += 1
-            if chasetime == chaseduration:
-                chase = False
-                for i in range(len(GHOSTS.sprites())):
-                    GHOSTS.sprites()[i].chase = False
-                BLINKY.image, BLINKY.rect = dood.load_image('blinky.bmp',-1)
-                PINKY.image, PINKY.rect = dood.load_image('pinky.bmp',-1)
-                INKY.image, INKY.rect = dood.load_image('inky.bmp',-1)
-                CLYDE.image, CLYDE.rect = dood.load_image('clyde.bmp',-1)
-                ghostseaten = 0
-                chasetime = 0
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                raise SystemExit
-            elif event.type == KEYDOWN:
-                if event.key == K_LEFT:
-                    pacman._turn('left')
-                elif event.key == K_RIGHT:
-                    pacman._turn('right')
-                elif event.key == K_UP:
-                    pacman._turn('up')
-                elif event.key == K_DOWN:
-                    pacman._turn('down')
-                elif event.key == K_ESCAPE:
-                    raise SystemExit
-                elif event.key == K_SPACE:
-                    paused = True
-        allsprites.update()
-        BLINKY.update_target(pacman.rect.center,chase)
-        PINKY.update_target(pacman.rect.center, pacman.vhat,chase)
-        INKY.update_target(pacman.rect.center,pacman.vhat,BLINKY.rect.center,chase)
-        CLYDE.update_target(pacman.rect.center,chase)
-        screen.blit(background, (0, 0))
-        allsprites.draw(screen)
-        pygame.display.flip()
-        if len(DOT.sprites()) == 0:
-            levelnumber += 1
-            playgame(levelnumber = levelnumber, yourscore = SCORE.val, yourlives = pacman.lives)
-
 playgame()
