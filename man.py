@@ -108,6 +108,7 @@ class player(dood.dude):
     def isdead(self, other):
         if self.box == other.box:
             global chase
+            global chasetime
             if other.chase:
                 global ghostseaten
                 ghostseaten += 1
@@ -138,6 +139,7 @@ class player(dood.dude):
                         PINKY.image, PINKY.rect = dood.load_image('pinky.bmp',-1)
                         INKY.image, INKY.rect = dood.load_image('inky.bmp',-1)
                         CLYDE.image, CLYDE.rect = dood.load_image('clyde.bmp',-1)
+                        chasetime = 0
                     
                     
                     print("I'm DEAD! I'm ALIVE BUT I'M DEAD!")
@@ -313,6 +315,7 @@ HIGHSCORE = highscore()
 
 
 chase  = False
+chasetime = 0
 ghostseaten = 0
 
 
@@ -322,8 +325,8 @@ clock = pygame.time.Clock()
 def playgame(levelnumber=0):
     global chase
     global ghostseaten
+    global chasetime
     chaseduration = 1000
-    chasetime = 0
     while 1:
         clock.tick(60)
         if chase:
