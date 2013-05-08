@@ -96,16 +96,18 @@ class player(dood.dude):
 
         if self.vhat == newv: #does nothing when you try to turn in the direction that you're already turning.
             return
-        
-        self.vhat = newv #sets direction to the direction you are trying to go
+        nextpos =  (self.rect.center[0] + newv[0]*self.speed, self.rect.center[1] + newv[1]*self.speed)
+        nextbox = mapfns.pos_to_box(nextpos)
+        if levelmap[nextbox[1]][nextbox[0]] == 1 or levelmap[nextbox[1]][nextbox[0]] == 2:
+            self.vhat = newv #sets direction to the direction you are trying to go
 
-        self.image = self.original #resets the image to its original (left-facing) orientation
-        center = self.rect.center
-        angles = {'up': 90, 'left': 180, 'down': 270, 'right': 0} #dictionary that defines rotation angles
+            self.image = self.original #resets the image to its original (left-facing) orientation
+            center = self.rect.center
+            angles = {'up': 90, 'left': 180, 'down': 270, 'right': 0} #dictionary that defines rotation angles
         
-        rotate = pygame.transform.rotate
-        self.image = rotate(self.original, angles[direct]) #rotates the image from its original position
-        self.rect = self.image.get_rect(center=center) #resets the image's center to its original center.
+            rotate = pygame.transform.rotate
+            self.image = rotate(self.original, angles[direct]) #rotates the image from its original position
+            self.rect = self.image.get_rect(center=center) #resets the image's center to its original center.
 
     def isdead(self, other):
         if self.box == other.box:
