@@ -1,0 +1,25 @@
+This pacman game was made using pygame. This means that we are able to take advantage of the sprite class as well as event handling modules in pygame.
+
+The game design can be split into two parts: the sprites and the map. 
+
+Starting with the map, we have a way of building the map that, although somewhat difficult to implement allows for greater flexibility in the long run. For our map, we assign each image, or tile, (corner, wall, open space) a different character. We then have a text file where we draw the map in these characters. Next we read the map using a python script, and for each character, we draw the corresponding tile in the the background of our game. This allows us to not only change ang create new maps fairly easily, but also have an easy system of determining what tiles, pacman can move in.
+
+Finally the sprite; we have sprites for pacman, the ghosts, the dots, and any text we want to have appear on the screen.
+
+Pacman (Player class):
+Pacman is a sprite that can only move in open spaces and cannot move into the house. He is controlled with the arrow keys, and can eat dots. Unless pacman is in chase mode, any contact with a ghost kills pacman. 
+
+Dots (Dot class):
+The dots are drawn at the center of every tile that pacman is allowed to move in. When pacman is in the same box as the dot, pacman eats the dot and gains 10 points.
+
+Super Dots (Dot class):
+These are the same as normal dots, except there are four per level. When eaten, the super dots are worth 50 points. They also activiate chase mode. In chase mode, the ghosts change color and pacman can eat the ghosts to gain points.
+
+Ghosts (Ghost class):
+In our game, we have four ghosts. These ghosts move around the maze and try to eat pacman. They each have a target position that they are trying to get to, and each chose their moves based on this target location. The ghosts always know their current and next positon. To determine their move two moves in the future, the ghosts all use the same logic. 
+
+To determine their next moves, our ghosts take the next position, and find all the positions that they could get to one move later, excluding the current position, because the ghost cannot travel backwards. The ghost then narrows down all the possible moves to all the legal moves and chooses the move that is closest to the target location. The ghosts all have different targeting methods, and therefore each ghost has its own class.
+
+In addition, all of the text we display in the game is a sprite. 
+
+
