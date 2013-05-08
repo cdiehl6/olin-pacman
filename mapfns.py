@@ -36,6 +36,8 @@ def mapgen(maptextfile = 'map.txt'):
         for c in range(len(read_data[r])):
             if read_data[r][c] == '#':
                 is_move_poss[r][c] = 1
+            elif read_data[r][c] == '=':
+                is_move_poss[r][c] = 1.5
             elif read_data[r][c] == 'O':
                 is_move_poss[r][c] = 2
     return is_move_poss

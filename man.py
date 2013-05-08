@@ -86,6 +86,7 @@ class player(dood.dude):
         dood.dude.__init__(self, position, imageloc, speed, vhat)
         self.original = self.image
         self.lives = lives
+        self.startpos = position
 
     def _turn(self, direct):
         #takes a string as an input of 'up' 'down' 'left' or 'right' and turns pacman and makes him go in the way you want him to go
@@ -106,22 +107,43 @@ class player(dood.dude):
 
     def isdead(self, other):
         if self.box == other.box:
-            self.lives -= 1
-            if self.lives:
-                current_pos = self.rect.center
-                movingx = 100 - current_pos[0]
-                movingy = 100 - current_pos[1]
-                newpos = self.rect.move((movingx,movingy))
-                self.rect = newpos
-                self.box = mapfns.pos_to_box(self.rect.center)
-                BLINKY.reset_to_home()
-                PINKY.reset_to_home()
-                INKY.reset_to_home()
-                CLYDE.reset_to_home()
-                print("I'm DEAD! I'm ALIVE BUT I'M DEAD!")
+            global chase
+            if other.chase:
+                global ghostseaten
+                ghostseaten += 1
+                SCORE.val += (ghostseaten**2)*100
+                other.reset_to_home()
+                other.image, other.rect = dood.load_image(other.name+'.bmp',-1)
+                other.chase = False
             else:
-                self.kill()
-                print('Welp, ya done died')
+                self.lives -= 1
+                if self.lives:
+                    current_pos = self.rect.center
+                    movingx = self.startpos[0] - current_pos[0]
+                    movingy = self.startpos[1] - current_pos[1]
+                    newpos = self.rect.move((movingx,movingy))
+                    self.rect = newpos
+                    self.box = mapfns.pos_to_box(self.rect.center)
+                    BLINKY.reset_to_home()
+                    PINKY.reset_to_home()
+                    INKY.reset_to_home()
+                    CLYDE.reset_to_home()
+                    if chase:
+                        chase = False
+                        BLINKY.chase = False
+                        PINKY.chase = False
+                        INKY.chase = False
+                        CLYDE.chase = False
+                        BLINKY.image, BLINKY.rect = dood.load_image('blinky.bmp',-1)
+                        PINKY.image, PINKY.rect = dood.load_image('pinky.bmp',-1)
+                        INKY.image, INKY.rect = dood.load_image('inky.bmp',-1)
+                        CLYDE.image, CLYDE.rect = dood.load_image('clyde.bmp',-1)
+                    
+                    
+                    print("I'm DEAD! I'm ALIVE BUT I'M DEAD!")
+                else:
+                    self.kill()
+                    print('Welp, ya done died')
         
     def _move(self):
 
@@ -172,6 +194,8 @@ class dot(pygame.sprite.Sprite):
             SCORE.val += self.value
             if self.value == 50:
                 print('chase engaged')
+                global chase
+                chase = True
             self.kill()
 
 
@@ -279,28 +303,52 @@ pygame.display.flip()
 
 
 pacman = player()
-BLINKY = ghosts.Blinky(imageloc = 'blinky.bmp')
-PINKY = ghosts.Pinky(imageloc = 'pinky.bmp')
-INKY = ghosts.Inky(imageloc = 'inky.bmp')
-CLYDE = ghosts.Clyde(imageloc = 'clyde.bmp')
+BLINKY = ghosts.Blinky(imageloc = 'blinky.bmp', name = 'blinky')
+PINKY = ghosts.Pinky(imageloc = 'pinky.bmp', name = 'pinky')
+INKY = ghosts.Inky(imageloc = 'inky.bmp', name = 'inky')
+CLYDE = ghosts.Clyde(imageloc = 'clyde.bmp', name = 'clyde')
 DOT = dotgroup(levelmap)
 SCORE = score()
 HIGHSCORE = highscore()
 
 
-chase = False
-chaseduration = 30
-chasetime = 0
-
+chase  = False
+ghostseaten = 0
 
 
 allsprites = pygame.sprite.RenderPlain(DOT, pacman, BLINKY, PINKY, INKY, CLYDE, SCORE, HIGHSCORE)
 clock = pygame.time.Clock()
 
 def playgame(levelnumber=0):
-
+    global chase
+    global ghostseaten
+    chaseduration = 1000
+    chasetime = 0
     while 1:
         clock.tick(60)
+        if chase:
+            if chasetime == 0:
+                BLINKY.image, BLINKY.rect = dood.load_image('chase.bmp',-1)
+                PINKY.image, PINKY.rect = dood.load_image('chase.bmp',-1)
+                INKY.image, INKY.rect = dood.load_image('chase.bmp',-1)
+                CLYDE.image, CLYDE.rect = dood.load_image('chase.bmp',-1)
+                BLINKY.chase = True
+                PINKY.chase = True
+                INKY.chase = True
+                CLYDE.chase = True
+            chasetime += 1
+            if chasetime == chaseduration:
+                chase = False
+                BLINKY.image, BLINKY.rect = dood.load_image('blinky.bmp',-1)
+                PINKY.image, PINKY.rect = dood.load_image('pinky.bmp',-1)
+                INKY.image, INKY.rect = dood.load_image('inky.bmp',-1)
+                CLYDE.image, CLYDE.rect = dood.load_image('clyde.bmp',-1)
+                BLINKY.chase = False
+                PINKY.chase = False
+                INKY.chase = False
+                CLYDE.chase = False
+                ghostseaten = 0
+                chasetime = 0
         for event in pygame.event.get():
             if event.type == QUIT:
                 raise SystemExit
@@ -325,6 +373,4 @@ def playgame(levelnumber=0):
         screen.blit(background, (0, 0))
         allsprites.draw(screen)
         pygame.display.flip()
-        print(chase)
-
 playgame()

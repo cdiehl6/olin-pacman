@@ -7,8 +7,8 @@ import dood
 import mapfns
 
 class ghost(dood.dude):
-    #Dictionary to go from direction to direction unit vector
-    def __init__(self, position = mapfns.box_to_pos((12,14)), imageloc = 'ghost1.bmp', speed=2, target = (0,0), vhat = (0,1), chase= False,):
+    home_boxes = ((11,12),(12,12),(12,11),(12,12),(12,13),(12,14))
+    def __init__(self, position = mapfns.box_to_pos((12,14)), imageloc = 'ghost1.bmp', speed=2, target = (0,0), vhat = (0,1), chase= False, name = 'Paul'):
 	#Initialize ghost parameters
         dood.dude.__init__(self, position, imageloc, speed)
         self.target = target
@@ -16,7 +16,8 @@ class ghost(dood.dude):
         self.speed = speed #sets speed
         self.startpos = position
         self.nextpos = (self.rect.center[0] + self.vhat[0]*self.speed, self.rect.center[1] + self.vhat[1]*self.speed)
-        
+        self.chase = chase
+        self.name = name
     def get_poss_moves(self):
         #New next possible moves for the ghost
         possmoves = []
@@ -89,15 +90,15 @@ class ghost(dood.dude):
 class Blinky(ghost):
 	#Blinky's target is pacman
     def update_target(self,pac_pos,chase):
-        if chase:
-            self.target = self.startpos
+        if self.chase:
+            self.target = (self.area.left,self.area.top)
         else:
             self.target = pac_pos
 class Pinky(ghost):
 	#Pinky's target is 4 tiles offset in the direction pacman is moving, except when pacman is moving up. Then it is 4 tiles up and 4 to the left.
     def update_target(self,pac_pos,pac_vhat,chase):
         if chase:
-            self.target = self.startpos
+            self.target = (self.area.right,self.area.top)
         else:
             if pac_vhat == self.directions['left']:
                 self.target = [pac_pos[0] - 4*18, pac_pos[1]]
@@ -112,7 +113,7 @@ class Inky(ghost):
 #I don't even know how to describe this target tile. The dossier says this: "To determine Inky's target, we must first establish an intermediate offset two tiles in front of Pac-Man in the direction he is moving (represented by the tile bracketed in green above). Now imagine drawing a vector from the center of the red ghost's current tile to the center of the offset tile, then double the vector length by extending it out just as far again beyond the offset tile.
     def update_target(self,pac_pos,pac_vhat,blinky_pos,chase):
         if chase:
-            self.target = self.startpos
+            self.target = (self.area.right,self.area.bottom)
         else:
             if pac_vhat == self.directions['left']:
                 self.target = [pac_pos[0] - 4*18, pac_pos[1]]
@@ -127,7 +128,7 @@ class Clyde(ghost):
     #Clyde targets pacman when pacman is more than 8 squares away, and the bottom left corner when pacman is closer
     def update_target(self,pac_pos,chase):
         if chase:
-            self.target = self.startpos
+            self.target = (self.area.left,self.area.bottom)
         else:
             #get the distance from Clyde to pacman
             dist = sqrt((self.rect.center[0]-pac_pos[0])**2 + (self.rect.center[1]-pac_pos[1])**2)
