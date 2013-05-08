@@ -1,6 +1,6 @@
 To use this project, and to enjoy a wonderful game of pacman:
 1) In the terminal, enter the where pacman is saved.
-2) Use the command './man.py'.
+2) Use the command './GAME.py'.
 3) Welcome to Pacman!! The Pacman start screen should open. To start Pacman press any key.
 4) Manuver Pacman with the arrow keys. Avoid getting eaten by ghosts and try to eat them after 'chase mode' (the ghosts turn blue) is entered when a 'super pellet' (the large white dots surrounded by black) is eaten.
 5) Pacman has three lives. After Pacman dies three time, the game window will close. If it does not, CONGRATULATIONS! You have a high score. Go to the terminal and enter your name. Once done, the window will close.
