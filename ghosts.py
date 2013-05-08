@@ -8,7 +8,7 @@ import mapfns
 
 class ghost(dood.dude):
     home_boxes = ((11,12),(12,12),(12,11),(12,12),(12,13),(12,14))
-    def __init__(self, position = mapfns.box_to_pos((12,14)), imageloc = 'ghost1.bmp', speed=2, target = (0,0), vhat = (0,1), chase= False, name = 'Paul'):
+    def __init__(self, position = mapfns.box_to_pos((14,14)), imageloc = 'ghost1.bmp', speed=2, target = (0,0), vhat = (0,1), chase= False, name = 'Paul'):
 	#Initialize ghost parameters
         dood.dude.__init__(self, position, imageloc, speed)
         self.target = target

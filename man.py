@@ -146,6 +146,7 @@ class player(dood.dude):
                 else:
                     self.kill()
                     print('Welp, ya done died')
+                    raise SystemExit
         
     def _move(self):
 
@@ -305,10 +306,10 @@ pygame.display.flip()
 
 
 pacman = player()
-BLINKY = ghosts.Blinky(imageloc = 'blinky.bmp', name = 'blinky')
-PINKY = ghosts.Pinky(imageloc = 'pinky.bmp', name = 'pinky')
-INKY = ghosts.Inky(imageloc = 'inky.bmp', name = 'inky')
-CLYDE = ghosts.Clyde(imageloc = 'clyde.bmp', name = 'clyde')
+BLINKY = ghosts.Blinky(imageloc = 'blinky.bmp', name = 'blinky',position =  mapfns.box_to_pos((11,14)))
+PINKY = ghosts.Pinky(imageloc = 'pinky.bmp', name = 'pinky',position =  mapfns.box_to_pos((12,14)))
+INKY = ghosts.Inky(imageloc = 'inky.bmp', name = 'inky', position =  mapfns.box_to_pos((13,14)))
+CLYDE = ghosts.Clyde(imageloc = 'clyde.bmp', name = 'clyde', position =  mapfns.box_to_pos((14,14)))
 DOT = dotgroup(levelmap)
 SCORE = score()
 HIGHSCORE = highscore()
@@ -326,7 +327,7 @@ def playgame(levelnumber=0):
     global chase
     global ghostseaten
     global chasetime
-    chaseduration = 1000
+    chaseduration = 500
     while 1:
         clock.tick(60)
         if chase:
