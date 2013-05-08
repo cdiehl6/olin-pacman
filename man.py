@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import os, sys
 import pygame
 from pygame.locals import *
@@ -142,9 +144,10 @@ class player(dood.dude):
                         chasetime = 0
                     
                     
-                    print("I'm DEAD! I'm ALIVE BUT I'M DEAD!")
+                    #"I'm DEAD! I'm ALIVE BUT I'M DEAD!"
                 else:
                     self.kill()
+                    HIGHSCORE.check_highscore(SCORE.val)
                     print('Welp, ya done died')
                     raise SystemExit
         
@@ -171,8 +174,7 @@ class player(dood.dude):
                     movingx = 0
                     movingy = 0
             except:
-                print('off screen')
-
+                offscreen = 1
         #move the dude!
         newpos = self.rect.move((movingx,movingy))
         self.rect = newpos
@@ -220,11 +222,12 @@ class dotgroup(pygame.sprite.Group):
                     self.add(newdot)
 
 class score(pygame.sprite.Sprite):
-    def __init__(self, pos= (300,300)):
+    def __init__(self, box = (1,30)):
         pygame.sprite.Sprite.__init__(self)
-        self.font = pygame.font.Font(None, 20)
+        self.font = pygame.font.Font(None, 24)
         self.val = 0
         self.update()
+        pos = mapfns.box_to_pos(box)
         self.rect = self.image.get_rect().move(pos)
 
     def update(self):
@@ -232,7 +235,7 @@ class score(pygame.sprite.Sprite):
         self.image = self.font.render(self.message, 0, (250,250,250))
 
 class highscore(pygame.sprite.Sprite):
-    def __init__(self, filename = 'highscore.txt', pos = (300,350)):
+    def __init__(self, filename = 'highscore.txt', box = (1,32)):
         pygame.sprite.Sprite.__init__(self)
         self.fullname = os.path.join('data', filename)
         try:
@@ -243,8 +246,9 @@ class highscore(pygame.sprite.Sprite):
             raise(SystemExit)
         self.alltime = self.list[0][0]
 
-        self.font = pygame.font.Font(None,20)
+        self.font = pygame.font.Font(None,24)
         self.update()
+        pos = mapfns.box_to_pos(box)
         self.rect = self.image.get_rect().move(pos)
        
     def new_highscore(self, score = 0, name = 'Mitch'):
@@ -260,7 +264,7 @@ class highscore(pygame.sprite.Sprite):
         for pair in self.list:
             if score > pair[0]:
                 name = raw_input('You got a high score, what is your name? ')
-                new_highscore(score,name)
+                self.new_highscore(score,name)
                 return
         return
 
@@ -271,9 +275,34 @@ class highscore(pygame.sprite.Sprite):
         self.message = "Highscore: %d" % self.alltime
         self.image = self.font.render(self.message, 0, (250,250,250))
 
+class lives(pygame.sprite.Sprite):
+    def __init__(self, box = (10,30)):
+        pygame.sprite.Sprite.__init__(self)
+        self.font = pygame.font.Font(None, 24)
+        self.update()
+        pos = mapfns.box_to_pos(box)
+        self.rect = self.image.get_rect().move(pos)
+
+    def update(self):
+        self.message = "Lives: %d" % pacman.lives
+        self.image = self.font.render(self.message, 0, (250,250,250))
+
+class message(pygame.sprite.Sprite):
+    def __init__(self, box = (10,32)):
+        pygame.sprite.Sprite.__init__(self)
+        self.font = pygame.font.Font(None, 36)
+        self.val = 'Olin-Pacman!'
+        self.update()
+        pos = mapfns.box_to_pos(box)
+        self.rect = self.image.get_rect().move(pos)
+
+    def update(self):
+        self.message = self.val
+        self.image = self.font.render(self.message, 0, (250,250,250))
+
 pygame.init()
 levelmap = mapfns.mapgen()
-screen = pygame.display.set_mode((24*18,29*18))
+screen = pygame.display.set_mode((24*18,(29+5)*18))
 pygame.display.set_caption('PacMan')
 pygame.mouse.set_visible(0)
 
@@ -293,9 +322,6 @@ tile_chars = {'<':(0,0), '-':(1,0), '>':(2,0), '|':(3,0), '#':(3,1), '=': (3,1),
 table =  tile_table.load_tile_table('pacmantiles.png',18,18)
 maparray = mapfns.mapchars()
 tiles = [[],[]]
-'''for x, row in enumerate(table):
-    for y, tile in enumerate(row):
-        screen.blit(tile, (x*18, y*18))'''
 for row in range(len(maparray)):
     for col in range(len(maparray[0])):
         tile_index = tile_chars[maparray[row][col]]
@@ -313,6 +339,8 @@ CLYDE = ghosts.Clyde(imageloc = 'clyde.bmp', name = 'clyde', position =  mapfns.
 DOT = dotgroup(levelmap)
 SCORE = score()
 HIGHSCORE = highscore()
+LIVES = lives()
+MESSAGE = message()
 
 
 chase  = False
@@ -320,7 +348,7 @@ chasetime = 0
 ghostseaten = 0
 
 
-allsprites = pygame.sprite.RenderPlain(DOT, pacman, BLINKY, PINKY, INKY, CLYDE, SCORE, HIGHSCORE)
+allsprites = pygame.sprite.RenderPlain(pacman, BLINKY, PINKY, INKY, CLYDE, DOT, SCORE, HIGHSCORE, LIVES, MESSAGE)
 clock = pygame.time.Clock()
 
 def playgame(levelnumber=0):
@@ -377,4 +405,5 @@ def playgame(levelnumber=0):
         screen.blit(background, (0, 0))
         allsprites.draw(screen)
         pygame.display.flip()
+
 playgame()
