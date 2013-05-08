@@ -19,6 +19,7 @@ class ghost(dood.dude):
         self.chase = chase
         self.name = name
     def get_poss_moves(self):
+        #New next possible moves for the ghost
         possmoves = []
         dir_order = ['up','left','down','right']
         validmove = True
@@ -39,7 +40,7 @@ class ghost(dood.dude):
                 side_box = mapfns.pos_to_box(side_pos)
                 if levelmap[side_box[1]][side_box[0]] == 0:
                     validmove = False
-                for ill_box in tunnel_boxes:
+                for ill_box in tunnel_boxes:#Ghosts cannot enter the tunnel
                     if (side_box[1],side_box[0]) == ill_box:
                         validmove = False
                 
@@ -95,8 +96,6 @@ class Blinky(ghost):
             self.target = pac_pos
 class Pinky(ghost):
 	#Pinky's target is 4 tiles offset in the direction pacman is moving, except when pacman is moving up. Then it is 4 tiles up and 4 to the left.
-
-#Right now, just adding tiles, not pixels BTW
     def update_target(self,pac_pos,pac_vhat,chase):
         if chase:
             self.target = (self.area.right,self.area.top)
