@@ -97,7 +97,6 @@ class player(dood.dude):
         if self.vhat == newv: #does nothing when you try to turn in the direction that you're already turning.
             return
         
-        
         self.vhat = newv #sets direction to the direction you are trying to go
 
         self.image = self.original #resets the image to its original (left-facing) orientation
@@ -145,7 +144,7 @@ class player(dood.dude):
                         chasetime = 0
                     
                     
-                    print("I'm DEAD! I'm ALIVE BUT I'M DEAD!")
+                    #"I'm DEAD! I'm ALIVE BUT I'M DEAD!"
                 else:
                     self.kill()
                     HIGHSCORE.check_highscore(SCORE.val)
@@ -349,7 +348,7 @@ chasetime = 0
 ghostseaten = 0
 
 
-allsprites = pygame.sprite.RenderPlain(DOT, pacman, BLINKY, PINKY, INKY, CLYDE, SCORE, HIGHSCORE, LIVES, MESSAGE)
+allsprites = pygame.sprite.RenderPlain(pacman, BLINKY, PINKY, INKY, CLYDE, DOT, SCORE, HIGHSCORE, LIVES, MESSAGE)
 clock = pygame.time.Clock()
 
 def playgame(levelnumber=0):
@@ -406,4 +405,5 @@ def playgame(levelnumber=0):
         screen.blit(background, (0, 0))
         allsprites.draw(screen)
         pygame.display.flip()
+
 playgame()
