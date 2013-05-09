@@ -1,0 +1,7 @@
+This Python version of Pacman was authored by:
+
+Mitchell Cieminski
+Claire Diehl
+Sophia Seitz
+
+Who are members of the Franklin W. Olin College of Engineering class of 2016.
