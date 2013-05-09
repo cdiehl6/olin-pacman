@@ -6,3 +6,5 @@ For the ghosts, the main problem is that they get stuck in the house some times.
 
 In terms of general gameplay, pacman could be improved by adding more levels and powerups. Also, if the tunnel worked the same way that it does in the real game, where pacman moves faster in the tunnel, that would be an improvement. 
 
+All in all, we are very happy with how our game turned out. We are especially proud of the map and how easy it is to change the maps. Although this map code was something we struggled with for most of the project, we feel that having the ability to easily construct new maps is pretty cool. 
+
