@@ -49,6 +49,24 @@ class dude(pygame.sprite.Sprite):
         self.vhat = vhat #sets initial direction
         self.speed = speed #sets speed in pixels (?) per cycle (?)
 
+    def is_valid_move(self,levelmap,poss_move,lowestvalid,invalid_boxes = (-1,-1)):
+        side_offsets = ((0,8),(8,0),(0,-8),(-8,0))
+        poss_box = mapfns.pos_to_box(poss_move)
+        if levelmap[poss_box[1]][poss_box[0]] == 0:
+            return False
+        elif not(poss_move[0] % 18 == 9 or poss_move[1] % 18 == 9):
+            return False
+        for side in side_offsets:
+            side_pos = (poss_move[0] + side[0], poss_move[1] + side[1])
+            side_box = mapfns.pos_to_box(side_pos)
+            if levelmap[side_box[1]][side_box[0]] < lowestvalid:
+                return False
+            for space in invalid_boxes:
+                if (side_box[1],side_box[0]) == space:
+                    print('tunnel')
+                    return False
+    
+        return True
     def update(self):
         #move the dood
         self._move()

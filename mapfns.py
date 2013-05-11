@@ -46,7 +46,7 @@ def mapgen(maptextfile = 'map.txt'):
                 is_move_poss[r][c] = 1
             #Only ghosts can move here (The house)
             elif read_data[r][c] == '=':
-                is_move_poss[r][c] = 1.5
+                is_move_poss[r][c] = 0.5
             #Draw a super dot here
             elif read_data[r][c] == 'O':
                 is_move_poss[r][c] = 2

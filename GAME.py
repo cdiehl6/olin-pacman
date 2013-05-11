@@ -115,18 +115,20 @@ def playgame(levelnumber=0, yourscore=0, yourlives=3):
             if event.type == QUIT:
                 raise SystemExit
             elif event.type == KEYDOWN:
-                if event.key == K_LEFT:
-                    pacman._turn('left')
-                elif event.key == K_RIGHT:
-                    pacman._turn('right')
-                elif event.key == K_UP:
-                    pacman._turn('up')
-                elif event.key == K_DOWN:
-                    pacman._turn('down')
-                elif event.key == K_ESCAPE:
+                if event.key == K_ESCAPE:
                     raise SystemExit
                 elif event.key == K_SPACE:
                     paused = True
+        pygame.key.set_repeat(0,50)
+        keys = pygame.key.get_pressed()
+        if keys[K_LEFT]:
+            pacman._turn('left')
+        elif keys[K_RIGHT]:
+            pacman._turn('right')
+        elif keys[K_UP]:
+            pacman._turn('up')
+        elif keys[K_DOWN]:
+            pacman._turn('down')
         allsprites.update()
         BLINKY.update_target(pacman.rect.center,chase)
         PINKY.update_target(pacman.rect.center, pacman.vhat,chase)
@@ -185,7 +187,7 @@ def load_sound(name):
 
 class player(dood.dude):
     """Defines the playable sprite object."""
-    def __init__(self, position = (100,100), imageloc = 'pacman.bmp', speed = 4, vhat = (1,0), lives =3):
+    def __init__(self, position = mapfns.box_to_pos((5,6)), imageloc = 'pacman.bmp', speed = 3, vhat = (1,0), lives =3):
         dood.dude.__init__(self, position, imageloc, speed, vhat)
         self.original = self.image
         self.lives = lives
@@ -193,9 +195,15 @@ class player(dood.dude):
     def _turn(self, direct):
         """takes a direction (string), turns the player and makes him go in the way you want him to go"""
         newv=self.directions[direct] #looks up in the directions dictionary
-
+        newpos = (self.rect.center[0] + newv[0]*self.speed, self.rect.center[1] + newv[1]*self.speed)
         if self.vhat == newv: #you can't turn in the direction you're currently going
             return
+        try:
+            valid_move = self.is_valid_move(levelmap,newpos,1)
+            if not valid_move:
+                return
+        except:
+            offscreen = 1
         self.vhat = newv #sets direction
         self.image = self.original #resets the image to left-facing
         center = self.rect.center
@@ -213,8 +221,8 @@ class player(dood.dude):
                 global ghostseaten
                 ghostseaten += 1
                 SCORE.val += (ghostseaten**2)*100
-                other.reset_to_home()
                 other.image, other.rect = dood.load_image(other.name+'.bmp',-1)
+                other.reset_to_home()
                 other.chase = False
             else:
                 self.lives -= 1 #kills the player
@@ -263,8 +271,7 @@ class player(dood.dude):
             try:
                 centerpos = self.rect.center
                 temp_new_move = (centerpos[0] + movingx, centerpos[1] + movingy)
-                temp_new_box = mapfns.pos_to_box(temp_new_move)
-                if levelmap[temp_new_box[1]][temp_new_box[0]] == 0:
+                if not self.is_valid_move(levelmap,temp_new_move,1):
                     movingx = 0
                     movingy = 0
             except:

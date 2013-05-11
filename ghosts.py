@@ -23,27 +23,23 @@ class ghost(dood.dude):
         possmoves = []
         dir_order = ['up','left','down','right']
         validmove = True
-        sideoffsets = ((0,-9),(-9,0),(0,7),(7,0))
+        sideoffsets = ((0,-8),(-8,0),(0,8),(8,0))
         tunnel_boxes = ((13,0),(13,1),(13,2),(13,3),(13,4),(13,19),(13,20),(13,21),(13,22),(13,23))
+        current_box_val = 1
+        for side in sideoffsets:
+            sidepos = (self.rect.center[0] + side[0], self.rect.center[1] + side[1])
+            sidebox = mapfns.pos_to_box(sidepos)
+            if levelmap[sidebox[1]][sidebox[0]] == 0.5:
+                current_box_val = 0.5
         for direct in dir_order:
             temp_vhat = self.directions[direct]
             temp_new_pos = (self.nextpos[0] + temp_vhat[0]*self.speed, self.nextpos[1]+ temp_vhat[1]*self.speed)
-            temp_box_pos = mapfns.pos_to_box(temp_new_pos)
+            if current_box_val == 0.5:
+                validmove = self.is_valid_move(levelmap,temp_new_pos,0.5,tunnel_boxes)
+            else:
+                validmove = self.is_valid_move(levelmap,temp_new_pos,1,tunnel_boxes)
             if temp_new_pos == self.rect.center:
                 validmove = False
-            if not(temp_new_pos[0]% 18 ==  9 or temp_new_pos[1] % 18 == 9):
-                validmove =False
-            if not(levelmap[temp_box_pos[1]][temp_box_pos[0]]):
-                validmove = False
-            for sideoff in sideoffsets:
-                side_pos = (temp_new_pos[0]+sideoff[0],temp_new_pos[1]+sideoff[1])
-                side_box = mapfns.pos_to_box(side_pos)
-                if levelmap[side_box[1]][side_box[0]] == 0:
-                    validmove = False
-                for ill_box in tunnel_boxes:#Ghosts cannot enter the tunnel
-                    if (side_box[1],side_box[0]) == ill_box:
-                        validmove = False
-                
             if validmove:
                 possmoves.append(temp_new_pos)
             validmove = True
@@ -90,14 +86,18 @@ class ghost(dood.dude):
 class Blinky(ghost):
 	#Blinky's target is pacman
     def update_target(self,pac_pos,chase):
-        if self.chase:
+        if levelmap[self.box[1]][self.box[0]] == 0.5:
+            self.target = (11,11)
+        elif self.chase:
             self.target = (self.area.left,self.area.top)
         else:
             self.target = pac_pos
 class Pinky(ghost):
 	#Pinky's target is 4 tiles offset in the direction pacman is moving, except when pacman is moving up. Then it is 4 tiles up and 4 to the left.
     def update_target(self,pac_pos,pac_vhat,chase):
-        if chase:
+        if levelmap[self.box[1]][self.box[0]] == 0.5:
+            self.target = (11,11)
+        elif chase:
             self.target = (self.area.right,self.area.top)
         else:
             if pac_vhat == self.directions['left']:
@@ -112,7 +112,9 @@ class Pinky(ghost):
 class Inky(ghost):
 #I don't even know how to describe this target tile. The dossier says this: "To determine Inky's target, we must first establish an intermediate offset two tiles in front of Pac-Man in the direction he is moving (represented by the tile bracketed in green above). Now imagine drawing a vector from the center of the red ghost's current tile to the center of the offset tile, then double the vector length by extending it out just as far again beyond the offset tile.
     def update_target(self,pac_pos,pac_vhat,blinky_pos,chase):
-        if chase:
+        if levelmap[self.box[1]][self.box[0]] == 0.5:
+            self.target = (11,11)
+        elif chase:
             self.target = (self.area.right,self.area.bottom)
         else:
             if pac_vhat == self.directions['left']:
@@ -127,7 +129,9 @@ class Inky(ghost):
 class Clyde(ghost):
     #Clyde targets pacman when pacman is more than 8 squares away, and the bottom left corner when pacman is closer
     def update_target(self,pac_pos,chase):
-        if chase:
+        if levelmap[self.box[1]][self.box[0]] == 0.5:
+            self.target = (11,11)
+        elif chase:
             self.target = (self.area.left,self.area.bottom)
         else:
             #get the distance from Clyde to pacman
