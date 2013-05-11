@@ -9,7 +9,7 @@ pygame.init()
 screen = pygame.display.set_mode((432,522))
 screen.fill((255,255,255))
 table =  tile_table.load_tile_table('pacmantiles.png',18,18)
-maparray = mapfns.mapchars(maptextfile = 'map3.txt')
+maparray = mapfns.mapchars(maptextfile = 'map.txt')
 tiles = [[],[]]
 print(table)
 '''for x, row in enumerate(table):
