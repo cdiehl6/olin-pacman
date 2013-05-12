@@ -221,7 +221,7 @@ class player(dood.dude):
                 global ghostseaten
                 ghostseaten += 1
                 SCORE.val += (ghostseaten**2)*100
-                other.image, other.rect = dood.load_image(other.name+'.bmp',-1)
+                other.image, other.rect = dood.load_image(other.name +'.bmp',-1)
                 other.reset_to_home()
                 other.chase = False
             else:
@@ -233,21 +233,14 @@ class player(dood.dude):
                     newpos = self.rect.move((movingx,movingy))
                     self.rect = newpos
                     self.box = mapfns.pos_to_box(self.rect.center)
-                    BLINKY.reset_to_home()
-                    PINKY.reset_to_home()
-                    INKY.reset_to_home()
-                    CLYDE.reset_to_home()
                     if chase:
                         chase = False
-                        BLINKY.chase = False
-                        PINKY.chase = False
-                        INKY.chase = False
-                        CLYDE.chase = False
-                        BLINKY.image, BLINKY.rect = dood.load_image('blinky.bmp',-1)
-                        PINKY.image, PINKY.rect = dood.load_image('pinky.bmp',-1)
-                        INKY.image, INKY.rect = dood.load_image('inky.bmp',-1)
-                        CLYDE.image, CLYDE.rect = dood.load_image('clyde.bmp',-1)
                         chasetime = 0
+                        for i in range(len(GHOSTS)):
+                            GHOSTS.sprites()[i].chase = False 
+                            GHOSTS.sprites()[i].image, GHOSTS.sprites()[i].rect = dood.load_image(GHOSTS.sprites()[i].name + '.bmp',-1)
+                    for i in range(len(GHOSTS)):
+                        GHOSTS.sprites()[i].reset_to_home()
                     #"I'm DEAD! I'm ALIVE BUT I'M DEAD!"
                 else:
                     self.kill()

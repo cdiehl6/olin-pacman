@@ -97,7 +97,7 @@ class Pinky(ghost):
     def update_target(self,pac_pos,pac_vhat,chase):
         if levelmap[self.box[1]][self.box[0]] == 0.5:
             self.target = (11,11)
-        elif chase:
+        elif self.chase:
             self.target = (self.area.right,self.area.top)
         else:
             if pac_vhat == self.directions['left']:
@@ -114,7 +114,7 @@ class Inky(ghost):
     def update_target(self,pac_pos,pac_vhat,blinky_pos,chase):
         if levelmap[self.box[1]][self.box[0]] == 0.5:
             self.target = (11,11)
-        elif chase:
+        elif self.chase:
             self.target = (self.area.right,self.area.bottom)
         else:
             if pac_vhat == self.directions['left']:
@@ -131,7 +131,7 @@ class Clyde(ghost):
     def update_target(self,pac_pos,chase):
         if levelmap[self.box[1]][self.box[0]] == 0.5:
             self.target = (11,11)
-        elif chase:
+        elif self.chase:
             self.target = (self.area.left,self.area.bottom)
         else:
             #get the distance from Clyde to pacman
