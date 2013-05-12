@@ -36,7 +36,7 @@ def reverse_lookup(d, v):
 class dude(pygame.sprite.Sprite):
     #A dictionary for converting from direction to a velocity unit vector.
     directions = {'up': (0,-1), 'left': (-1,0),'down': (0,1),'right': (1,0)} 
-    def __init__(self, position = (10,100), imageloc = 'pacman1.bmp', speed = 8, vhat = (0,-1)):
+    def __init__(self, position = (100,100), imageloc = 'pacman1.bmp', speed = 8, vhat = (0,-1)):
 	#Initialize the dood's parameers
         pygame.sprite.Sprite.__init__(self) #call sprite initializer
         self.image, self.rect = load_image(imageloc,-1) #sets its image to the called image

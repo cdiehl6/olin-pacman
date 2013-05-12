@@ -226,7 +226,7 @@ class player(dood.dude):
                 other.chase = False
             else:
                 self.lives -= 1 #kills the player
-                if self.lives:
+                if self.lives: 
                     current_pos = self.rect.center
                     movingx = self.startpos[0] - current_pos[0]
                     movingy = self.startpos[1] - current_pos[1]
@@ -239,9 +239,10 @@ class player(dood.dude):
                         for i in range(len(GHOSTS)):
                             GHOSTS.sprites()[i].chase = False 
                             GHOSTS.sprites()[i].image, GHOSTS.sprites()[i].rect = dood.load_image(GHOSTS.sprites()[i].name + '.bmp',-1)
+                   
+                    #"I'm DEAD! I'm ALIVE BUT I'M DEAD!"
                     for i in range(len(GHOSTS)):
                         GHOSTS.sprites()[i].reset_to_home()
-                    #"I'm DEAD! I'm ALIVE BUT I'M DEAD!"
                 else:
                     self.kill()
                     HIGHSCORE.check_highscore(SCORE.val) #checks highscore before ending the game

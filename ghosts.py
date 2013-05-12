@@ -140,7 +140,7 @@ class Clyde(ghost):
             if dist >= 8*18:
                 self.target = pac_pos
             else:
-                self.target = [0,29*18]
+                self.target = (self.area.left,self.area.bottom)
             #This should be the bottom left corner of the maze (I don't know what that is yet]
 
 levelmap = mapfns.mapgen()
