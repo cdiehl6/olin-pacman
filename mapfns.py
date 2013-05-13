@@ -1,5 +1,7 @@
 from math import floor
 
+import os, sys
+
 #Given a position in pixels, return the box that the position is in. 
 def pos_to_box(position = (0,0), boxsize=18):
     boxx = int(floor(position[0]/boxsize))
@@ -14,6 +16,7 @@ def box_to_pos(box = (0,0), boxsize=18):
 
 #Return a table where each line of the table is a row of the map.txt map
 def mapchars(maptextfile = 'map.txt'):
+    maptextfile = os.path.join(os.path.dirname(sys.argv[0]),'data',maptextfile)
      #Open the file and read the entire file
     with open(maptextfile, 'r') as f:
         read_data = f.readlines()
@@ -28,6 +31,7 @@ def mapchars(maptextfile = 'map.txt'):
 #Return a table whose values reflect wether or not a box is a legal move
 def mapgen(maptextfile = 'map.txt'):
     #Open the file and read the entire file
+    maptextfile = os.path.join(os.path.dirname(sys.argv[0]),'data',maptextfile)
     with open(maptextfile, 'r') as f:
         read_data = f.readlines() 
     #get just the map from the read data

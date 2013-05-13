@@ -11,14 +11,14 @@ import mapfns
 import pygame.draw
 import tile_table
 
-
-
 if not pygame.font:
     print 'Warning, fonts disabled'
 if not pygame.mixer:
     print 'Warning, sounds disabled'
 
 def game_boot():
+    background.fill((0,0,0))
+    screen.blit(background, (0,0))
     """Shows lines of text and waits for keyboard input"""
     line1 = loadscreen_text('Welcome to Olin-Pacman!', (100,100))
     line2 = loadscreen_text('Press any key to begin a game', (50,200))
@@ -33,6 +33,7 @@ def game_boot():
                     raise SystemExit
                 else: #any key that isn't escape moves the game foreward
                     allsprites.empty()
+                    playgame()
                     return
         allsprites.update()
         screen.blit(background, (0, 0))
@@ -156,12 +157,13 @@ class loadscreen_text(pygame.sprite.Sprite):
 
 def load_image(name, colorkey=None):
     """loads an image from the data folder, and sets its color key."""
-    fullname = os.path.join('data', name)
-    try:
-        image = pygame.image.load(fullname)
-    except pygame.error, message:
-        print('Cannot load image:', name)
-        raise SystemExit, message
+    fullname = os.path.join(os.path.dirname(sys.argv[0]),'data', name)
+#    try:
+    image = pygame.image.load(fullname)
+
+#    except pygame.error, message:
+#        print('Cannot load image:')
+#        raise SystemExit, message
     image = image.convert()
     if colorkey is not None:
         if colorkey is -1:
@@ -247,7 +249,7 @@ class player(dood.dude):
                     self.kill()
                     HIGHSCORE.check_highscore(SCORE.val) #checks highscore before ending the game
                     #'Welp, ya done died'
-                    raise SystemExit
+                    game_boot()
     def _move(self):
         """checks if the player can move in the direction it wants, and then moves it if it can, and stops it if it can't."""
         movingx = self.vhat[0]*self.speed #sets how far it will move in the x direction
@@ -352,17 +354,77 @@ class highscore(pygame.sprite.Sprite):
         self.list.append(newscore) #add new score to list
         self.list.sort(reverse = True)  #sort by score
         self.list.pop() #removes lowest score
-        print self.list
+        self.disp_highscore()
         with open(self.fullname, 'r+') as f:
             pickle.dump(self.list, f)
     def check_highscore(self, score):
         """Checks if you have a high score and asks for your name if you do, then calls new_highscore"""
         for pair in self.list:
             if score > pair[0]:
-                name = raw_input('You got a high score! What is your name? ')
-                self.new_highscore(score,name)
-                return
-        return
+                background.fill((0,0,0))
+                screen.blit(background, (0,0))
+                """Shows lines of text and waits for keyboard input"""
+                line1 = loadscreen_text('You have a highscore!', (100,100))
+                line2 = loadscreen_text(str(score),(100,200))
+                line3 = loadscreen_text('Please type your name',(100,400))
+                name = ''
+                global allsprites
+                allsprites = pygame.sprite.RenderPlain(line1,line2,line3)
+                while 1:
+                    for event in pygame.event.get():
+                        if event.type == QUIT:
+                            raise SystemExit
+                        elif event.type == KEYDOWN:
+                            if event.key == K_ESCAPE:
+                                raise SystemExit
+                            elif event.key == K_BACKSPACE:
+                                name = name[:len(name)-1]
+                                line3.message = name
+                            elif event.key in [K_TAB, K_CLEAR,K_PAUSE,K_EXCLAIM,K_QUOTEDBL,K_LSHIFT,K_RSHIFT,K_LCTRL,K_RCTRL,K_CAPSLOCK,K_RIGHT, K_LEFT, K_UP, K_DOWN]:
+                                pass
+                            elif event.key == K_SPACE:
+                                name += ' '
+                                line3.message = name
+                            elif event.key == K_RETURN:
+                                self.new_highscore(score,name)
+                                return
+                            else: #any key that isn't escape moves the game foreward
+                                name += pygame.key.name(event.key)
+                                line3.message = name
+                                #game_boot()
+                    allsprites.update()
+                    screen.blit(background, (0, 0))
+                    allsprites.draw(screen)
+                    pygame.display.flip()
+        self.disp_highscore()
+    def disp_highscore(self):
+        global allsprites
+        allsprites = pygame.sprite.RenderPlain()
+        background.fill((0,0,0))
+        screen.blit(background, (0,0))
+        wait = 0
+        GAMEOVER = loadscreen_text('GAME OVER', (100,50))
+        allsprites.add(GAMEOVER)
+        for i in range(len(self.list)):
+            stringy = str(self.list[i][0]) +'  ' +str(self.list[i][1])
+            line = loadscreen_text(stringy, (100,150+40*i))
+            allsprites.add(line)
+        while wait<300:
+            clock.tick(60)
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    raise SystemExit
+                elif event.type == KEYDOWN:
+                    if event.key == K_ESCAPE:
+                        raise SystemExit
+                    else:
+                        if wait>100:
+                            return
+            allsprites.update()
+            screen.blit(background, (0, 0))
+            allsprites.draw(screen)
+            pygame.display.flip()
+            wait += 1
     def update(self):
         """displays highest score, unless your score beats it, and then it shows your score"""
         if SCORE.val >= self.alltime:
@@ -400,8 +462,8 @@ class message(pygame.sprite.Sprite):
 #Begin the game environment!
 
 pygame.init()
-screen = pygame.display.set_mode((24*18,(29+5)*18))
-pygame.display.set_caption('PacMan')
+screen = pygame.display.set_mode((24*18,(29+5)*18),pygame.FULLSCREEN)
+pygame.display.set_caption('Olin-Man')
 pygame.mouse.set_visible(0)
 
 background = pygame.Surface(screen.get_size())
@@ -410,7 +472,6 @@ background.fill((0,0,0))
 screen.blit(background, (0,0))
 pygame.display.flip()
 
+clock = pygame.time.Clock()
 game_boot()
 pygame.display.flip()
-clock = pygame.time.Clock()
-playgame()
