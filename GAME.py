@@ -40,11 +40,11 @@ def game_boot():
         allsprites.draw(screen)
         pygame.display.flip()
 
-def background_gen():
+def background_gen(files = 'map.txt'):
     """make the background image from the map"""
     tile_chars = {'<':(0,0), '-':(1,0), '>':(2,0), '|':(3,0), '#':(3,1), '=': (3,1), '\\': (0,1),'/':(2,1),'O':(3,1)}
     table =  tile_table.load_tile_table('pacmantiles.png',18,18)
-    maparray = mapfns.mapchars()
+    maparray = mapfns.mapchars(files)
     tiles = [[],[]]
     for row in range(len(maparray)):
         for col in range(len(maparray[0])):
@@ -138,7 +138,7 @@ def playgame(levelnumber=0, yourscore=0, yourlives=3):
         screen.blit(background, (0, 0))
         allsprites.draw(screen)
         pygame.display.flip()
-        if len(DOT.sprites()) == 0:
+        if len(DOT.sprites()) < 1:
             #if the level ends, start the next one.
             levelnumber += 1
             playgame(levelnumber = levelnumber, yourscore = SCORE.val, yourlives = pacman.lives)
@@ -189,7 +189,7 @@ def load_sound(name):
 
 class player(dood.dude):
     """Defines the playable sprite object."""
-    def __init__(self, position = mapfns.box_to_pos((5,6)), imageloc = 'pacman.bmp', speed = 3, vhat = (1,0), lives =3):
+    def __init__(self, position = mapfns.box_to_pos((13,16)), imageloc = 'pacman.bmp', speed = 3, vhat = (1,0), lives =3):
         dood.dude.__init__(self, position, imageloc, speed, vhat)
         self.original = self.image
         self.lives = lives
